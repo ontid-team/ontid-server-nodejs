@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  server-redis:
+    image: redis:6
+    container_name: server-redis
+    networks:
+      - server-main
+    ports:
+      - 6365:6379
+    restart: unless-stopped
+
+  server-main:
+    container_name: server-main
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file: ./.env
+    volumes:
+      - ./storage:/app/storage
+    networks:
+      - server-main
+    ports:
+      - ${APP_PORT}:5757
+    restart: unless-stopped
+
+  server-db:
+    image: postgres:13
+    container_name: server-db
+    volumes:
+      - ./data/postgresql/server:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - server-main
+    ports:
+      - 54322:5432
+    restart: unless-stopped
+
+networks:
+  server-main:
+    name: server-main

@@ -1,0 +1,5 @@
+### GET LIST USER
+GET {{baseUrl}}/api/users
+
+### GET ONE USER
+GET {{baseUrl}}/api/users/2

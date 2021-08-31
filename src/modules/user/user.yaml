@@ -1,0 +1,42 @@
+definitions:
+  ProfileUser:
+    type: object
+    title: ProfileUser
+    description: ProfileUser
+    properties:
+      firstName:
+        type: string
+        example: Dmitry
+      lastName:
+        type: string
+        example: Neverovski
+      birthday:
+        type: string
+        example: 1995-03-12
+  UserResponse:
+    type: object
+    title: User
+    description: User
+    properties:
+      id:
+        type: integer
+        format: int32
+        example: 1
+      email:
+        type: string
+        example: dmitry@ontid.com
+      phone:
+        type: string
+        example: '+1-203-110-1'
+      role:
+        type: string
+        enum:
+          - angel
+        example: user
+      isNotifyEmail:
+        type: boolean
+        example: false
+      profile:
+        $ref: '#/definitions/ProfileUser'
+      avatar:
+        $ref: '#/definitions/Media'

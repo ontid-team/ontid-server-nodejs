@@ -1,0 +1,26 @@
+definitions:
+  Media:
+    type: object
+    title: Media
+    description: Media
+    properties:
+      id:
+        type: integer
+        format: int32
+        example: 1
+      url:
+        type: string
+        example: https://test.test/storage/074f328be9e9e0a2-1623071570814.jpeg
+      thumbnailUrl:
+        type: string
+        example: https://test.test/storage/074f328be9e9e0a2-1623071570814.jpeg
+  MediaRequest:
+    type: object
+    title: MediaRequest
+    description: MediaRequest
+    properties:
+      file:
+        type: string
+        format: binary
+  MediaResponse:
+    $ref: '#/definitions/Media'
