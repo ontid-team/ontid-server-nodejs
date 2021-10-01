@@ -11,7 +11,7 @@ export const DB_TABLE_PLATFORM = 'platforms';
 
 export const LIMIT_PAGE = 10;
 export const MAX_LIMIT_PAGE = 50;
-export const MAX_SIZE_MB = 5;
+export const MAX_SIZE_IMAGE_MB = 5;
 
 export const DEFAULT_SEED_DATA = 100;
 

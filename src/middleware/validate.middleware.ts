@@ -1,11 +1,12 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import addKeywords from 'ajv-keywords';
-import { NextFunction, RequestHandler, Request, Response } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { JSONSchema7 } from 'json-schema';
 
-import { MiddlewareCore, IJsonSchema } from '@core/index';
-import { capitalize, CodeResponse } from '@utils/index';
+import { MiddlewareCore } from '@core/index';
+import { IJsonSchema } from '@core/schema';
+import { capitalize, CodeResponse, Role } from '@utils/index';
 
 class ValidateMiddleware extends MiddlewareCore {
   protected ajv: Ajv;
@@ -13,7 +14,11 @@ class ValidateMiddleware extends MiddlewareCore {
   constructor() {
     super();
 
-    this.ajv = new Ajv({ allErrors: true, coerceTypes: true });
+    this.ajv = new Ajv({
+      allErrors: true,
+      coerceTypes: true,
+      useDefaults: true,
+    });
     addFormats(this.ajv);
     addKeywords(this.ajv, ['transform', 'uniqueItemProperties']);
     this.ajv.addFormat('phone', /^\+[0-9]*/);
@@ -51,9 +56,15 @@ class ValidateMiddleware extends MiddlewareCore {
   handler(schemas: IJsonSchema): RequestHandler {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
-        await this.validate(schemas.params, req.params);
-        await this.validate(schemas.query, req.query);
-        await this.validate(schemas.body, req.body);
+        const role = req?.currentUser?.role || Role.USER;
+
+        const params = schemas?.params[role] || schemas.params;
+        const query = schemas?.query[role] || schemas.query;
+        const body = schemas?.body[role] || schemas.body;
+
+        await this.validate(params, req.params);
+        await this.validate(query, req.query);
+        await this.validate(body, req.body);
         next();
       } catch (errors) {
         res.status(422).json({

@@ -51,6 +51,11 @@ export const CodeResponse = {
     status: 401,
     code: HttpExceptionType.TOKEN_EXPIRED,
   },
+  [HttpExceptionType.TOKEN_MALFORMED]: {
+    status: 401,
+    code: HttpExceptionType.TOKEN_MALFORMED,
+    message: 'Trying get data from token. Something wrong',
+  },
   [HttpExceptionType.FORBIDDEN]: {
     message: 'Forbidden',
     status: 403,
@@ -76,11 +81,16 @@ export const CodeResponse = {
     status: 422,
     code: HttpExceptionType.UNPROCESSABLE_ENTITY,
   },
-  [HttpExceptionType.LIMIT_FILE_SIZE]: {
+  [HttpExceptionType.LIMIT_FILE_IMAGE_SIZE]: {
     message:
       'This file is too large to upload. The maximum supported file sizes are: 5 MB.',
     status: 500,
-    code: HttpExceptionType.LIMIT_FILE_SIZE,
+    code: HttpExceptionType.LIMIT_FILE_IMAGE_SIZE,
+  },
+  [HttpExceptionType.FILE_FORMAT]: {
+    message: 'Wrong file format',
+    status: 500,
+    code: HttpExceptionType.FILE_FORMAT,
   },
   [HttpExceptionType.EXTERNAL]: {
     message: 'External service error',

@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 
 import { ControllerCore } from '@core/index';
 
+import { MediaDTO } from './dto';
 import { IMediaService } from './interface';
 
 export default class MediaController extends ControllerCore {
@@ -29,6 +30,6 @@ export default class MediaController extends ControllerCore {
       size,
     });
 
-    res.status(201).json(data);
+    res.status(201).json(this.response(MediaDTO, data));
   }
 }

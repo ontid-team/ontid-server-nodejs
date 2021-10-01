@@ -2,10 +2,9 @@ import { getCustomRepository } from 'typeorm';
 
 import { ServiceCore } from '@core/index';
 
-import { MediaDTO } from './dto';
 import { IMediaService } from './interface';
 import MediaRepository from './media.repository';
-import { Media } from './media.type';
+import { FullMedia, Media } from './media.type';
 
 export default class MediaService extends ServiceCore implements IMediaService {
   readonly repository: MediaRepository;
@@ -17,8 +16,6 @@ export default class MediaService extends ServiceCore implements IMediaService {
   }
 
   async create(body: Media) {
-    const mediaFromDB = await this.repository.createMedia(body);
-
-    return this.response(MediaDTO, mediaFromDB);
+    return (await this.repository.createMedia(body)) as FullMedia;
   }
 }

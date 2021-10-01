@@ -1,10 +1,15 @@
-import { RequestHandler, Request } from 'express';
+import { Request, RequestHandler } from 'express';
 import mime from 'mime';
 import multer, { Multer, StorageEngine, FileFilterCallback } from 'multer';
 
 import { MediaConfig } from '@config/index';
 import { MiddlewareCore } from '@core/index';
-import { MAX_SIZE_MB, getHashName } from '@utils/index';
+import {
+  MAX_SIZE_IMAGE_MB,
+  getHashName,
+  responseError,
+  HttpExceptionType,
+} from '@utils/index';
 
 class UploadFileMiddleware extends MiddlewareCore {
   protected upload: Multer;
@@ -14,9 +19,6 @@ class UploadFileMiddleware extends MiddlewareCore {
 
     this.upload = multer({
       storage: this.diskStorage,
-      limits: {
-        fileSize: MAX_SIZE_MB * 1024 * 1024,
-      },
       fileFilter: this.fileFilter,
     });
   }
@@ -42,17 +44,23 @@ class UploadFileMiddleware extends MiddlewareCore {
 
   private get fileFilter() {
     return (
-      _req: Request,
+      req: Request,
       file: Express.Multer.File,
       cb: FileFilterCallback,
     ) => {
-      if (/^image\//.test(file.mimetype)) {
-        cb(null, true);
+      const fileSize = req.headers['content-length'] || 0;
+      let error = responseError(HttpExceptionType.FILE_FORMAT);
 
-        return;
+      if (/^(image)\//.test(file.mimetype)) {
+        if (fileSize <= MAX_SIZE_IMAGE_MB * 1024 * 1024) {
+          cb(null, true);
+
+          return;
+        }
+        error = responseError(HttpExceptionType.LIMIT_FILE_IMAGE_SIZE);
       }
 
-      cb(new Error('Wrong file type'));
+      cb(error);
     };
   }
 

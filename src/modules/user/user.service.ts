@@ -3,7 +3,6 @@ import { getCustomRepository } from 'typeorm';
 import { ServiceCore } from '@core/index';
 import { OptionCtx } from '@utils/index';
 
-import { UserDTO } from './dto';
 import { IUserService } from './interface';
 import UserRepository from './user.repository';
 import { FullUser } from './user.type';
@@ -18,29 +17,28 @@ export default class UserService extends ServiceCore implements IUserService {
   }
 
   async getList(params: Context) {
-    const { page, limit, skip } = params.pagination;
+    const { limit, skip } = params.pagination;
 
     const options: OptionCtx<FullUser> = {
       skip,
       take: limit,
     };
 
-    const [usersFromDB, count] = await Promise.all([
-      this.repository.findEntityList(options),
-      this.repository.count(),
-    ]);
-
-    return this.response(UserDTO, usersFromDB, {
-      page: { page, limit, count },
-    });
+    return (await this.repository.findEntityList(options)) as FullUser[];
   }
 
   async getOne(query: Partial<FullUser>) {
     const options: OptionCtx<FullUser> = {
       where: query,
     };
-    const userFromDB = await this.repository.findEntityOneOrFail(options);
 
-    return this.response(UserDTO, userFromDB);
+    return (await this.repository.findEntityOneOrFail(options)) as FullUser;
+  }
+
+  async count(params: Context) {
+    const { page, limit } = params.pagination;
+    const count = await this.repository.count();
+
+    return { page, limit, count };
   }
 }

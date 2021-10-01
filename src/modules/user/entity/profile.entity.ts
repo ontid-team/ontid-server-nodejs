@@ -17,29 +17,21 @@ export default class ProfileEntity
   @Column('int', { unique: true })
   userId!: number;
 
-  @Column('varchar', {
-    nullable: true,
-  })
-  firstName?: string;
-
-  @Column('varchar', {
-    nullable: true,
-  })
-  lastName?: string;
-
-  @Column('date', {
-    nullable: true,
-  })
-  birthday?: string;
-
-  @Column('text', {
-    nullable: true,
-  })
-  about?: string;
-
-  @OneToOne(() => UserEntity, (user) => user.profile, { onDelete: 'CASCADE' })
+  @OneToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: UserEntity;
+
+  @Column('varchar', { nullable: true })
+  firstName?: string;
+
+  @Column('varchar', { nullable: true })
+  lastName?: string;
+
+  @Column('date', { nullable: true })
+  birthday?: string;
+
+  @Column('text', { nullable: true })
+  about?: string;
 
   public get fullName(): string {
     return `${this.firstName || ''} ${this.lastName || ''}`.trim();

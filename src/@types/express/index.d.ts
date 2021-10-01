@@ -1,3 +1,9 @@
+type CurrentUser = {
+  userId: number;
+  email: string;
+  role: string;
+};
+
 type Context = {
   pagination: {
     page: number;
@@ -6,9 +12,11 @@ type Context = {
   };
   order: { [key: string]: string };
 };
+
 declare namespace Express {
   export interface Request {
     ctx: Context;
+    currentUser: CurrentUser;
     params: any;
     rawBody: Buffer;
   }

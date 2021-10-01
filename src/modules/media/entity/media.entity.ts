@@ -9,27 +9,19 @@ import { IMedia } from '../interface';
   name: DB_TABLE_MEDIA,
 })
 export default class MediaEntity extends EntityCore<IMedia> implements IMedia {
-  @Column('varchar', {
-    nullable: true,
-  })
+  @Column('varchar', { nullable: true })
   name!: string;
 
   @Column('text')
   path!: string;
 
-  @Column('text', {
-    nullable: true,
-  })
+  @Column('text', { nullable: true })
   thumbnailPath!: string;
 
-  @Column('varchar', {
-    nullable: true,
-  })
+  @Column('varchar', { nullable: true })
   mimeType!: string;
 
-  @Column('int', {
-    nullable: true,
-  })
+  @Column('int', { nullable: true })
   size!: number;
 
   get url() {

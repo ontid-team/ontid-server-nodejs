@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 
 import { ControllerCore } from '@core/index';
 
+import { UserDTO } from './dto';
 import { IUserService } from './interface';
 
 /**
@@ -52,9 +53,12 @@ export default class UserController extends ControllerCore {
    *                    $ref: '#/components/schemas/Meta'
    */
   async getList(req: Request, res: Response) {
-    const data = await this.service.getList(req.ctx);
+    const [userFromService, page] = await Promise.all([
+      this.service.getList(req.ctx),
+      this.service.count(req.ctx),
+    ]);
 
-    res.json(data);
+    res.json(this.response(UserDTO, userFromService, { page }));
   }
 
   /**
@@ -87,6 +91,6 @@ export default class UserController extends ControllerCore {
 
     const data = await this.service.getOne({ id });
 
-    res.json(data);
+    res.json(this.response(UserDTO, data));
   }
 }
