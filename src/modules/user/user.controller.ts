@@ -16,7 +16,6 @@ export default class UserController extends ControllerCore {
   constructor(private readonly service: IUserService) {
     super();
 
-    this.init();
     AutoBind(this);
   }
 
@@ -53,12 +52,14 @@ export default class UserController extends ControllerCore {
    *                    $ref: '#/components/schemas/Meta'
    */
   async getList(req: Request, res: Response) {
-    const [userFromService, page] = await Promise.all([
+    const { page, limit } = req.ctx.pagination;
+
+    const [data, count] = await Promise.all([
       this.service.getList(req.ctx),
-      this.service.count(req.ctx),
+      this.service.count(),
     ]);
 
-    res.json(this.response(UserDTO, userFromService, { page }));
+    this.response(res, { data, dto: UserDTO, page: { page, limit, count } });
   }
 
   /**
@@ -91,6 +92,6 @@ export default class UserController extends ControllerCore {
 
     const data = await this.service.getOne({ id });
 
-    res.json(this.response(UserDTO, data));
+    this.response(res, { data, dto: UserDTO });
   }
 }

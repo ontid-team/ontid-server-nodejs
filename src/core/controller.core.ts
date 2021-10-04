@@ -1,48 +1,41 @@
 import { plainToClass, ClassTransformOptions } from 'class-transformer';
+import { Response } from 'express';
 
-import { responseError, HttpExceptionType } from '@utils/index';
+import { responseError, HttpExceptionType, HttpStatus } from '@utils/index';
 
 import Logger from './logger';
 
 export default class ControllerCore {
-  init(): void {
-    Logger.trace(`${this.constructor.name} initialized...`);
+  constructor() {
+    this.init();
   }
 
-  protected response<T, R>(
-    transformTo: { new (): R },
-    data: T[],
-    params?: {
+  response<T, DTO>(
+    res: Response,
+    ctx?: {
+      data: T | T[];
+      dto: { new (): DTO };
+      status?: HttpStatus;
+      page?: Page | null;
       options?: ClassTransformOptions;
-      page?: Page;
     },
-  ): ResponseData<R[]>;
+  ) {
+    const { data, options, page, dto } = ctx || {};
 
-  protected response<T, R>(
-    transformTo: { new (): R },
-    data: T,
-    params?: {
-      options?: ClassTransformOptions;
-      page?: Page;
-    },
-  ): ResponseData<R>;
-
-  protected response<T, R>(
-    transformTo: { new (): R },
-    data: T | T[],
-    params?: {
-      options?: ClassTransformOptions;
-      page?: Page;
-    },
-  ): ResponseData<R | R[]> {
-    if (!data) {
+    if (!data && ctx?.status === HttpStatus.OK) {
       throw responseError(HttpExceptionType.NOT_FOUND);
     }
 
-    const dataDTO = plainToClass(transformTo, data, params?.options || {});
-    const meta = params?.page ? this.pages(params.page) : null;
+    const status = !ctx ? HttpStatus.NoContent : ctx?.status || HttpStatus.OK;
 
-    return { data: dataDTO, ...(meta && { meta }) };
+    res.status(status).json({
+      ...(data && dto && { data: plainToClass(dto, data, options) }),
+      ...(page && { meta: this.pages(page) }),
+    });
+  }
+
+  private init(): void {
+    Logger.trace(`${this.constructor.name} initialized...`);
   }
 
   private pages(data: Page): Meta {

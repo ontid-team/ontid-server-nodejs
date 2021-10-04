@@ -35,10 +35,7 @@ export default class UserService extends ServiceCore implements IUserService {
     return (await this.repository.findEntityOneOrFail(options)) as FullUser;
   }
 
-  async count(params: Context) {
-    const { page, limit } = params.pagination;
-    const count = await this.repository.count();
-
-    return { page, limit, count };
+  async count() {
+    return this.repository.count();
   }
 }
