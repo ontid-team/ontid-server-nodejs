@@ -14,7 +14,7 @@ export default class ControllerCore {
     res: Response,
     ctx?: {
       data: T | T[];
-      dto: { new (): DTO };
+      dto?: { new (): DTO };
       status?: HttpStatus;
       page?: Page | null;
       options?: ClassTransformOptions;
@@ -29,7 +29,7 @@ export default class ControllerCore {
     const status = !ctx ? HttpStatus.NoContent : ctx?.status || HttpStatus.OK;
 
     res.status(status).json({
-      ...(data && dto && { data: plainToClass(dto, data, options) }),
+      ...(data && { data: dto ? plainToClass(dto, data, options) : data }),
       ...(page && { meta: this.pages(page) }),
     });
   }
