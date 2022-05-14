@@ -1,42 +1,74 @@
-definitions:
-  ProfileUser:
-    type: object
-    title: ProfileUser
-    description: ProfileUser
-    properties:
-      firstName:
-        type: string
-        example: Dmitry
-      lastName:
-        type: string
-        example: Neverovski
-      birthday:
-        type: string
-        example: 1995-03-12
-  UserResponse:
-    type: object
-    title: User
-    description: User
-    properties:
-      id:
-        type: integer
-        format: int32
-        example: 1
-      email:
-        type: string
-        example: dmitry@ontid.com
-      phone:
-        type: string
-        example: '+1-203-110-1'
-      role:
+components:
+  parameters:
+    SortByFullName:
+      in: query
+      name: order[full_name]
+      required: false
+      schema:
         type: string
         enum:
-          - angel
-        example: user
-      isNotifyEmail:
-        type: boolean
-        example: false
-      profile:
-        $ref: '#/definitions/ProfileUser'
-      avatar:
-        $ref: '#/definitions/Media'
+          - asc
+          - desc
+      description: order by fullName [admin]
+
+  responses:
+    UserListResponse:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FullUser'
+              meta:
+                $ref: '#/components/schemas/Meta'
+
+    UserOneResponse:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/FullUser'
+  schemas:
+    ProfileUser:
+      type: object
+      properties:
+        fullName:
+          type: string
+          example: Dmitry Neverovski
+        firstName:
+          type: string
+          example: Dmitry
+        lastName:
+          type: string
+          example: Dmitry
+        birthday:
+          type: string
+          example: 1995-03-12
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          example: dmitry@ontid.com
+        isNotifyEmail:
+          type: boolean
+          example: false
+        avatar:
+          $ref: '#/components/schemas/Media'
+        profile:
+          $ref: '#/components/schemas/ProfileUser'
+    FullUser:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: number
+              example: 1
+        - $ref: '#/components/schemas/User'

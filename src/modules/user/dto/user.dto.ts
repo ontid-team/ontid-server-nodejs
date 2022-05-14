@@ -1,20 +1,21 @@
 import { Exclude, Type, Expose } from 'class-transformer';
 
 import { MediaDTO } from '@modules/media';
-import { Role } from '@utils/index';
+import { Role } from '@utils';
 
 import { ProfileDTO } from './profile.dto';
 
 @Exclude()
 export class UserDTO {
   @Expose()
-  id!: number;
+  @Type(() => MediaDTO)
+  avatar!: MediaDTO;
 
   @Expose()
   email!: string;
 
   @Expose()
-  role!: Role;
+  id!: number;
 
   @Expose()
   isNotifyEmail!: boolean;
@@ -24,6 +25,5 @@ export class UserDTO {
   profile!: ProfileDTO;
 
   @Expose()
-  @Type(() => MediaDTO)
-  avatar!: MediaDTO;
+  role!: Role;
 }

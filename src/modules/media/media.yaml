@@ -1,26 +1,46 @@
-definitions:
-  Media:
-    type: object
-    title: Media
-    description: Media
-    properties:
-      id:
-        type: integer
-        format: int32
-        example: 1
-      url:
-        type: string
-        example: https://test.test/storage/074f328be9e9e0a2-1623071570814.jpeg
-      thumbnailUrl:
-        type: string
-        example: https://test.test/storage/074f328be9e9e0a2-1623071570814.jpeg
-  MediaRequest:
-    type: object
-    title: MediaRequest
-    description: MediaRequest
-    properties:
-      file:
-        type: string
-        format: binary
-  MediaResponse:
-    $ref: '#/definitions/Media'
+components:
+  responses:
+    MediaResponse:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/Media'
+
+  requestBodies:
+    MediaRequest:
+      description: Upload file
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required:
+              - file
+            properties:
+              file:
+                type: string
+                format: binary
+
+  schemas:
+    Media:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        name:
+          type: string
+          example: 72903098_2573923372689485_4766732546811625472_o.jpg
+        mimeType:
+          type: string
+          example: image/jpeg
+        url:
+          type: string
+          example: https://test.test/storage/074f328be9e9e0a2-1623071570814.jpeg
+        thumbnailUrl:
+          type: string
+          example: https://test.test/storage/074f328be9e9e0a2-1623071570814.jpeg

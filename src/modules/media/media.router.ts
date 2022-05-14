@@ -1,25 +1,25 @@
 import { Router } from 'express';
+import { container } from 'tsyringe';
 
-import { RouterCore } from '@core/index';
-import { UploadFileMiddleware, AsyncMiddleware } from '@middleware/index';
+import { RouterCore } from '@core';
+import { AsyncMiddleware, UploadFileMiddleware } from '@middleware';
 
 import MediaController from './media.controller';
-import MediaService from './media.service';
 
 export default class MediaRouter extends RouterCore {
-  private readonly mediaController: MediaController;
+  private readonly controller: MediaController;
 
   constructor() {
     super(Router());
 
-    this.mediaController = new MediaController(new MediaService());
+    this.controller = container.resolve(MediaController);
   }
 
-  init() {
+  init(): Router {
     this.router.post(
       '/',
       UploadFileMiddleware.handler(),
-      AsyncMiddleware(this.mediaController.upload),
+      AsyncMiddleware(this.controller.upload.bind(this.controller)),
     );
 
     return this.router;

@@ -1,41 +1,32 @@
-import { plainToClass, ClassTransformOptions } from 'class-transformer';
+import { plainToInstance, ClassTransformOptions } from 'class-transformer';
 import { Response } from 'express';
 
-import { responseError, HttpExceptionType, HttpStatus } from '@utils/index';
-
-import Logger from './logger';
+import { HttpException, HttpStatus } from '@utils';
+import { ResponseHelper } from '@utils/helpers';
 
 export default class ControllerCore {
-  constructor() {
-    this.init();
-  }
-
   response<T, DTO>(
     res: Response,
     ctx?: {
       data: T | T[];
       dto?: { new (): DTO };
-      status?: HttpStatus;
-      page?: Page | null;
       options?: ClassTransformOptions;
+      page?: Page | null;
+      status?: HttpStatus;
     },
   ) {
     const { data, options, page, dto } = ctx || {};
 
     if (!data && ctx?.status === HttpStatus.OK) {
-      throw responseError(HttpExceptionType.NOT_FOUND);
+      throw ResponseHelper.error(HttpException.NOT_FOUND);
     }
 
     const status = !ctx ? HttpStatus.NoContent : ctx?.status || HttpStatus.OK;
 
     res.status(status).json({
-      ...(data && { data: dto ? plainToClass(dto, data, options) : data }),
+      ...(data && { data: dto ? plainToInstance(dto, data, options) : data }),
       ...(page && { meta: this.pages(page) }),
     });
-  }
-
-  private init(): void {
-    Logger.trace(`${this.constructor.name} initialized...`);
   }
 
   private pages(data: Page): Meta {
@@ -44,6 +35,7 @@ export default class ControllerCore {
     const totalPages = pages || 1;
 
     return {
+      limit: data.limit,
       currentPage,
       hasNextPage: currentPage < totalPages,
       hasPrevPage: currentPage > 1,

@@ -1,21 +1,43 @@
-import { isDate, addMilliseconds, getUnixTime } from 'date-fns';
+import {
+  addMilliseconds as fnsAddMilliseconds,
+  addDays as fnsaddDays,
+  getUnixTime as fnsGetUnixTime,
+  isDate as fnsIsDate,
+  parseISO as fnsParseISO,
+} from 'date-fns';
 import ms from 'ms';
 
-export const convertToMS = (input: string): number => {
-  return ms(input);
-};
+export default (() => {
+  const parseISO = (date: DateCtx) =>
+    typeof date === 'string' ? fnsParseISO(date) : date;
 
-export const addMillisecondToDate = (
-  input?: Date | number,
-  amount?: number,
-): Date => {
-  const date = input && isDate(input) ? input : new Date();
+  const toDate = (date: DateCtx) => parseISO(date);
 
-  return addMilliseconds(date, amount || 0);
-};
+  const toMs = (input: string): number => ms(input);
 
-export const convertToUnixTime = (input?: Date | number): number => {
-  const date = input && isDate(input) ? input : new Date();
+  const toUnix = (date?: DateCtx): number =>
+    fnsGetUnixTime(
+      date && fnsIsDate(new Date(date)) ? parseISO(date) : new Date(),
+    );
 
-  return getUnixTime(date);
-};
+  const addMillisecondToDate = (date?: DateCtx, amount?: number): Date =>
+    fnsAddMilliseconds(
+      date && fnsIsDate(new Date(date)) ? parseISO(date) : new Date(),
+      amount || 0,
+    );
+
+  const addDayToDate = (date?: DateCtx, amount?: number) =>
+    fnsaddDays(
+      date && fnsIsDate(new Date(date)) ? parseISO(date) : new Date(),
+      amount || 0,
+    );
+
+  return {
+    toDate,
+    parseISO,
+    toMs,
+    toUnix,
+    addMillisecondToDate,
+    addDayToDate,
+  };
+})();

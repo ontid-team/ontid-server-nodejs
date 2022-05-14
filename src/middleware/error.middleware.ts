@@ -1,17 +1,20 @@
 import { Request, Response, ErrorRequestHandler, NextFunction } from 'express';
 
-import { MiddlewareCore, HttpException, Logger } from '@core/index';
-import { CodeResponse } from '@utils/index';
+import { MiddlewareCore, HttpExceptionCore } from '@core';
+import { Logger } from '@lib';
+import {
+  CodeResponse,
+  HttpException,
+  COOKIE_REFRESH_TOKEN,
+  COOKIE_ACCESS_TOKEN,
+  LoggerType,
+} from '@utils';
+import { CookieHelper } from '@utils/helpers';
 
 class ErrorMiddleware extends MiddlewareCore {
-  /**
-   * Handler
-   *
-   * @returns {Function}
-   */
   handler(): ErrorRequestHandler {
     return (
-      error: HttpException,
+      error: HttpExceptionCore,
       _req: Request,
       res: Response,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -28,9 +31,17 @@ class ErrorMiddleware extends MiddlewareCore {
         response = { ...error };
       }
 
-      const errorRes = new HttpException(response);
+      if (
+        error.code === HttpException.REFRESH_TOKEN_EXPIRED ||
+        error.code === HttpException.REFRESH_TOKEN_VERIFY
+      ) {
+        CookieHelper.deleteOne(res, COOKIE_ACCESS_TOKEN);
+        CookieHelper.deleteOne(res, COOKIE_REFRESH_TOKEN);
+      }
 
-      Logger.error(errorRes.message, error);
+      const errorRes = new HttpExceptionCore(response);
+
+      Logger.error({ message: errorRes.message, error, type: LoggerType.HTTP });
 
       res.status(errorRes.status).json(errorRes);
     };

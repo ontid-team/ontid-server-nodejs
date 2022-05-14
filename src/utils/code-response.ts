@@ -1,110 +1,181 @@
-import { HttpExceptionType, IHttpException } from './utility-types';
+export enum HttpException {
+  BAD_REQUEST = 'BAD_REQUEST',
+  DB_ERROR = 'DB_ERROR',
+  DELETE_ERROR = 'DELETE_ERROR',
+  EMAIL_ALREADY_TAKEN = 'EMAIL_ALREADY_TAKEN',
+  EMPTY_BODY = 'EMPTY_BODY',
+  EXTERNAL = 'EXTERNAL',
+  FILE_FORMAT = 'FILE_FORMAT',
+  FORBIDDEN = 'FORBIDDEN',
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
+  LIMIT_FILE_IMAGE_SIZE = 'LIMIT_FILE_IMAGE_SIZE',
+  NOT_FOUND = 'NOT_FOUND',
+  OK = 'OK',
+  PASSWORD_RESET_SENT_EMAIL = 'PASSWORD_RESET_SENT_EMAIL',
+  PASSWORD_RESET_SUCCESSFULLY = 'PASSWORD_RESET_SUCCESSFULLY',
+  REFRESH_TOKEN_EXPIRED = 'SESSION_EXPIRED',
+  REFRESH_TOKEN_VERIFY = 'BAD_REFRESH_TOKEN',
+  ROUTE_NOT_FOUND = 'ROUTE_NOT_FOUND',
+  SERVER_ERROR = 'SERVER_ERROR',
+  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
+  TOKEN_MALFORMED = 'TOKEN_MALFORMED',
+  TOKEN_NOT_PROVIDED = 'TOKEN_NOT_PROVIDE',
+  TOKEN_VERIFY = 'TOKEN_VERIFY',
+  UNPROCESSABLE_ENTITY = 'UNPROCESSABLE_ENTITY',
+  USER_CREATED = 'USER_CREATED',
+  USER_UPDATE = 'USER_UPDATE',
+  WRONG_EMAIL_CONFIRM_TOKEN = 'WRONG_EMAIL_CONFIRM_TOKEN',
+  WRONG_RESET_PASSWORD_TOKEN = 'WRONG_RESET_PASSWORD_TOKEN',
+}
+
+export enum HttpStatus {
+  OK = 200,
+  Created = 201,
+  NoContent = 204,
+  BadRequest = 400,
+  Unauthorized = 401,
+  Forbidden = 403,
+  NotFound = 404,
+  Conflict = 409,
+  UnprocessableEntity = 422,
+  InternalServerError = 500,
+}
 
 export const CodeResponse = {
-  [HttpExceptionType.OK]: {
+  [HttpException.OK]: {
+    status: HttpStatus.OK,
+    code: HttpException.OK,
     message: 'Ok',
-    status: 200,
-    code: HttpExceptionType.OK,
   },
-  [HttpExceptionType.SENT_SMS]: {
-    message: 'Code sent to phone',
-    status: 200,
-    code: HttpExceptionType.SENT_SMS,
+  [HttpException.PASSWORD_RESET_SENT_EMAIL]: {
+    message: 'Password reset code sent to email',
+    status: HttpStatus.OK,
+    code: HttpException.PASSWORD_RESET_SENT_EMAIL,
   },
-  [HttpExceptionType.VERIFIED_EMAIL]: {
-    message: 'Your email is verified',
-    status: 200,
-    code: HttpExceptionType.VERIFIED_EMAIL,
+  [HttpException.PASSWORD_RESET_SUCCESSFULLY]: {
+    message: 'Password reset successfully',
+    status: HttpStatus.OK,
+    code: HttpException.PASSWORD_RESET_SUCCESSFULLY,
   },
-  [HttpExceptionType.WRONG_EMAIL_CONFIRM_TOKEN]: {
-    message: 'Confirm email token is not registered. Probably it already used',
-    status: 400,
-    code: HttpExceptionType.WRONG_EMAIL_CONFIRM_TOKEN,
+  [HttpException.USER_CREATED]: {
+    status: HttpStatus.OK,
+    code: HttpException.USER_CREATED,
+    message: 'User created successfully!',
   },
-  [HttpExceptionType.BAD_REQUEST]: {
+  [HttpException.USER_UPDATE]: {
+    status: HttpStatus.OK,
+    code: HttpException.USER_UPDATE,
+    message: 'User updated successfully!',
+  },
+  [HttpException.BAD_REQUEST]: {
+    status: HttpStatus.BadRequest,
+    code: HttpException.BAD_REQUEST,
     message: 'Bad Request',
-    status: 400,
-    code: HttpExceptionType.BAD_REQUEST,
   },
-  [HttpExceptionType.INVALID_CREDENTIALS]: {
+  [HttpException.EMPTY_BODY]: {
+    status: HttpStatus.BadRequest,
+    code: HttpException.EMPTY_BODY,
+    message: 'Empty body is not allowed. Please fill the body',
+  },
+  [HttpException.INVALID_CREDENTIALS]: {
     message: 'Invalid credentials',
-    status: 400,
-    code: HttpExceptionType.INVALID_CREDENTIALS,
+    status: HttpStatus.BadRequest,
+    code: HttpException.INVALID_CREDENTIALS,
   },
-  [HttpExceptionType.EMPTY_EMAIL]: {
-    message: 'Empty email is not allowed. Please fill the email',
-    status: 400,
-    code: HttpExceptionType.EMPTY_EMAIL,
+  [HttpException.TOKEN_NOT_PROVIDED]: {
+    status: HttpStatus.Unauthorized,
+    code: HttpException.TOKEN_NOT_PROVIDED,
+    message: 'Token not provided',
   },
-  [HttpExceptionType.TOKEN_VERIFY]: {
-    message: 'Token verify error',
-    status: 400,
-    code: HttpExceptionType.TOKEN_VERIFY,
-  },
-  [HttpExceptionType.PARSE_TOKEN]: {
-    message: 'Trying get data from access token. Something wrong',
-    status: 401,
-    code: HttpExceptionType.PARSE_TOKEN,
-  },
-  [HttpExceptionType.TOKEN_EXPIRED]: {
+  [HttpException.TOKEN_EXPIRED]: {
+    status: HttpStatus.Unauthorized,
+    code: HttpException.TOKEN_EXPIRED,
     message: 'Token expired',
-    status: 401,
-    code: HttpExceptionType.TOKEN_EXPIRED,
   },
-  [HttpExceptionType.TOKEN_MALFORMED]: {
-    status: 401,
-    code: HttpExceptionType.TOKEN_MALFORMED,
+  [HttpException.REFRESH_TOKEN_EXPIRED]: {
+    status: HttpStatus.Unauthorized,
+    code: HttpException.REFRESH_TOKEN_EXPIRED,
+    message: 'Refresh token expired',
+  },
+  [HttpException.TOKEN_MALFORMED]: {
+    status: HttpStatus.Unauthorized,
+    code: HttpException.TOKEN_MALFORMED,
     message: 'Trying get data from token. Something wrong',
   },
-  [HttpExceptionType.FORBIDDEN]: {
+  [HttpException.TOKEN_VERIFY]: {
+    status: HttpStatus.Unauthorized,
+    code: HttpException.TOKEN_VERIFY,
+    message: 'Token verify error',
+  },
+  [HttpException.REFRESH_TOKEN_VERIFY]: {
+    status: HttpStatus.Unauthorized,
+    code: HttpException.REFRESH_TOKEN_VERIFY,
+    message: 'Refresh token verify error',
+  },
+  [HttpException.WRONG_RESET_PASSWORD_TOKEN]: {
+    status: HttpStatus.Unauthorized,
+    code: HttpException.WRONG_RESET_PASSWORD_TOKEN,
+    message: 'Reset password token is not registered. Probably it already used',
+  },
+  [HttpException.WRONG_EMAIL_CONFIRM_TOKEN]: {
+    status: HttpStatus.Unauthorized,
+    code: HttpException.WRONG_EMAIL_CONFIRM_TOKEN,
+    message: 'Confirm email token is not registered. Probably it already used',
+  },
+  [HttpException.FORBIDDEN]: {
+    status: HttpStatus.Forbidden,
+    code: HttpException.FORBIDDEN,
     message: 'Forbidden',
-    status: 403,
-    code: HttpExceptionType.FORBIDDEN,
   },
-  [HttpExceptionType.NOT_FOUND]: {
+  [HttpException.NOT_FOUND]: {
+    status: HttpStatus.NotFound,
+    code: HttpException.NOT_FOUND,
     message: 'Not found',
-    status: 404,
-    code: HttpExceptionType.NOT_FOUND,
   },
-  [HttpExceptionType.ROUTE_NOT_FOUND]: {
+  [HttpException.ROUTE_NOT_FOUND]: {
+    status: HttpStatus.NotFound,
+    code: HttpException.ROUTE_NOT_FOUND,
     message: 'Route not found',
-    status: 404,
-    code: HttpExceptionType.ROUTE_NOT_FOUND,
   },
-  [HttpExceptionType.USER_ALREADY_TAKEN]: {
-    message: 'This email or phone already taken, try use another',
-    status: 409,
-    code: HttpExceptionType.USER_ALREADY_TAKEN,
+  [HttpException.EMAIL_ALREADY_TAKEN]: {
+    message: 'This email already taken, try use another',
+    status: HttpStatus.Conflict,
+    code: HttpException.EMAIL_ALREADY_TAKEN,
   },
-  [HttpExceptionType.UNPROCESSABLE_ENTITY]: {
+  [HttpException.UNPROCESSABLE_ENTITY]: {
+    status: HttpStatus.UnprocessableEntity,
+    code: HttpException.UNPROCESSABLE_ENTITY,
     message: 'Validation Failed',
-    status: 422,
-    code: HttpExceptionType.UNPROCESSABLE_ENTITY,
   },
-  [HttpExceptionType.LIMIT_FILE_IMAGE_SIZE]: {
+  [HttpException.LIMIT_FILE_IMAGE_SIZE]: {
     message:
       'This file is too large to upload. The maximum supported file sizes are: 5 MB.',
-    status: 500,
-    code: HttpExceptionType.LIMIT_FILE_IMAGE_SIZE,
+    status: HttpStatus.InternalServerError,
+    code: HttpException.LIMIT_FILE_IMAGE_SIZE,
   },
-  [HttpExceptionType.FILE_FORMAT]: {
+  [HttpException.FILE_FORMAT]: {
     message: 'Wrong file format',
-    status: 500,
-    code: HttpExceptionType.FILE_FORMAT,
+    status: HttpStatus.InternalServerError,
+    code: HttpException.FILE_FORMAT,
   },
-  [HttpExceptionType.EXTERNAL]: {
+  [HttpException.EXTERNAL]: {
     message: 'External service error',
-    status: 500,
-    code: HttpExceptionType.EXTERNAL,
+    status: HttpStatus.InternalServerError,
+    code: HttpException.EXTERNAL,
   },
-  [HttpExceptionType.SERVER_ERROR]: {
+  [HttpException.SERVER_ERROR]: {
     message: 'Server error occurred',
-    status: 500,
-    code: HttpExceptionType.SERVER_ERROR,
+    status: HttpStatus.InternalServerError,
+    code: HttpException.SERVER_ERROR,
   },
-  [HttpExceptionType.DB_ERROR]: {
+  [HttpException.DB_ERROR]: {
     message: 'DB error',
-    status: 500,
-    code: HttpExceptionType.DB_ERROR,
+    status: HttpStatus.InternalServerError,
+    code: HttpException.DB_ERROR,
   },
-} as Record<HttpExceptionType, IHttpException>;
+  [HttpException.DELETE_ERROR]: {
+    message: 'Deletion is not possible',
+    status: HttpStatus.BadRequest,
+    code: HttpException.DELETE_ERROR,
+  },
+} as Record<HttpException, HttpExceptionType>;

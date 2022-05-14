@@ -1,11 +1,11 @@
 import { Router } from 'express';
+import { container } from 'tsyringe';
 
-import { RouterCore } from '@core/index';
-import { AsyncMiddleware, ValidateMiddleware } from '@middleware/index';
+import { RouterCore } from '@core';
+import { AsyncMiddleware, ValidateMiddleware } from '@middleware';
 
 import UserController from './user.controller';
 import { GetListUserSchema, GetOneUserSchema } from './user.schema';
-import UserService from './user.service';
 
 export default class UserRouter extends RouterCore {
   private readonly controller: UserController;
@@ -13,7 +13,7 @@ export default class UserRouter extends RouterCore {
   constructor() {
     super(Router());
 
-    this.controller = new UserController(new UserService());
+    this.controller = container.resolve(UserController);
   }
 
   init(): Router {

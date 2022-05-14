@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import http from 'http';
 
 import { json, urlencoded } from 'body-parser';
@@ -6,24 +8,25 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 
-import { MediaConfig } from '@config/index';
-import { MiddlewareCore, Logger } from '@core/index';
-import { createFolder } from '@utils/index';
+import { AppConfig, MediaConfig } from '@config';
+import { MiddlewareCore } from '@core';
+import { Logger } from '@lib';
+import { FolderHelper } from '@utils/helpers';
 
 import Router from './router';
 
 type ServerType = {
-  port: number;
-  initMiddleware: MiddlewareCore[];
   errorMiddleware: MiddlewareCore;
+  initMiddleware: MiddlewareCore[];
+  port: number;
 };
 
 export default class Server {
   app!: express.Express;
   httpServer!: http.Server;
-  private readonly port: number;
-  private readonly initMiddleware: MiddlewareCore[];
   private readonly errorMiddleware: MiddlewareCore;
+  private readonly initMiddleware: MiddlewareCore[];
+  private readonly port: number;
 
   constructor({ port, initMiddleware, errorMiddleware }: ServerType) {
     this.port = port;
@@ -42,14 +45,57 @@ export default class Server {
     await this.listen();
   }
 
-  private routes(): void {
-    this.app.get('/', this.basePathRoute);
-    Router(this.app);
+  private addErrorHandler(): void {
+    try {
+      this.app.use(this.errorMiddleware.handler());
+    } catch (err) {
+      throw new Error('Default error middleware failed.');
+    }
+  }
+
+  private basePathRoute(_req: express.Request, res: express.Response): void {
+    res.json({ message: 'base path' });
+  }
+
+  private createFolder(): void {
+    MediaConfig.init.forEach((folder) => FolderHelper.create(folder).then());
+  }
+
+  private async listen(): Promise<void> {
+    return new Promise((resolve) => {
+      process.on('unhandledRejection', (reason) => {
+        Logger.error({ message: 'unhandledRejection', error: reason });
+      });
+
+      process.on('rejectionHandled', (promise) => {
+        Logger.warn({ message: 'rejectionHandled', error: promise });
+      });
+
+      process.on('multipleResolves', (type, promise, reason) => {
+        Logger.error({
+          message: 'multipleResolves',
+          error: { type, promise, reason },
+        });
+      });
+
+      process.on('uncaughtException', (error) => {
+        Logger.fatal({ message: 'uncaughtException', error });
+        process.exit(1);
+      });
+
+      return this.app.listen(this.port, () => resolve());
+    });
   }
 
   private middleware(): void {
     this.app.use(helmet());
-    this.app.use(cors());
+    this.app.use(
+      cors({
+        maxAge: 3600,
+        credentials: true,
+        origin: new RegExp(AppConfig.domain),
+      }),
+    );
     this.app.use(
       json({
         verify: (req: express.Request, _res, buf) => {
@@ -62,61 +108,15 @@ export default class Server {
 
     for (const m of this.initMiddleware) {
       try {
-        m.init();
         this.app.use(m.handler());
       } catch (err) {
-        // throw err;
+        throw err;
       }
     }
   }
 
-  private basePathRoute(_req: express.Request, res: express.Response): void {
-    res.json({ message: 'base path' });
-  }
-
-  private addErrorHandler(): void {
-    try {
-      this.errorMiddleware.init();
-      this.app.use(this.errorMiddleware.handler());
-    } catch (err) {
-      throw new Error('Default error middleware failed.');
-    }
-  }
-
-  private createFolder(): void {
-    MediaConfig.init.forEach((folder) => createFolder(folder).then());
-  }
-
-  private async listen(): Promise<void> {
-    return new Promise((resolve) => {
-      process.on('unhandledRejection', (reason) => {
-        const error = 'Error - unhandled rejection';
-
-        Logger.error('unhandledRejection', new Error(error), reason);
-      });
-
-      process.on('rejectionHandled', (reason) => {
-        const error = 'Error - rejection handled';
-
-        Logger.warn('rejectionHandled', new Error(error), reason);
-      });
-
-      process.on('multipleResolves', (type, promise, value) => {
-        const error = 'Error - multiple resolves';
-
-        Logger.error('multipleResolves', new Error(error), {
-          type,
-          promise,
-          value,
-        });
-      });
-
-      process.on('uncaughtException', (error) => {
-        Logger.fatal('uncaughtException', error);
-        process.exit(1);
-      });
-
-      return this.app.listen(this.port, () => resolve());
-    });
+  private routes(): void {
+    this.app.get('/', this.basePathRoute);
+    Router(this.app);
   }
 }

@@ -1,0 +1,173 @@
+components:
+  parameters:
+    IdParam:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 10
+      description: 'ID to return'
+
+    LimitParam:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        example: 10
+      description: The numbers of items to return
+
+    PageParam:
+      in: query
+      name: page
+      required: false
+      schema:
+        type: integer
+        example: 1
+      description: The page number
+
+    SearchParam:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: string
+        example: Search
+      description: The search
+
+    UserIdParam:
+      in: query
+      name: filter[user_id]
+      required: false
+      schema:
+        type: number
+        example: 20
+      description: Filter by userId
+
+    IsActiveParam:
+      in: query
+      name: filter[is_active]
+      required: false
+      schema:
+        type: boolean
+        example: true
+      description: Filter by isActive
+
+    StartDateParam:
+      in: query
+      name: filter[start_date]
+      required: false
+      schema:
+        type: string
+        format: date
+        example: '2021-06-08'
+      description: Filter by startDate
+
+    EndDateParam:
+      in: query
+      name: filter[end_date]
+      required: false
+      schema:
+        type: string
+        format: date
+        example: '2021-06-10'
+      description: Filter by endDate
+
+    SortByIdParam:
+      in: query
+      name: order[id]
+      required: false
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+      description: sort by id field
+
+    SortByCreatedAtParam:
+      in: query
+      name: order[created_at]
+      required: false
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+      description: sort by createdAt field
+
+  responses:
+    ResponseHttpOk:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Ok
+              status:
+                type: number
+                example: 200
+              code:
+                type: string
+                example: OK
+
+    ResponseHttpNoContent:
+      description: No Content
+
+    ResponseId:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - id
+            properties:
+              id:
+                type: number
+                example: 1
+
+  securitySchemes:
+    cookie:
+      type: apiKey
+      in: cookie
+      name: accessToken
+
+  schemas:
+    Meta:
+      type: object
+      properties:
+        limit:
+          type: number
+          format: int64
+          example: 20
+        currentPage:
+          type: number
+          format: int64
+          example: 1
+        hasNextPage:
+          type: boolean
+          example: true
+        hasPrevPage:
+          type: boolean
+          example: false
+        nextPage:
+          type: number
+          format: int64
+          example: 2
+        prevPage:
+          type: number
+          format: int64
+          example: 1
+        totalPages:
+          type: number
+          format: int64
+          example: 10
+        totalItems:
+          type: number
+          format: int64
+          example: 200

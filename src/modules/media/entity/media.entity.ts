@@ -1,7 +1,8 @@
 import { Entity, Column } from 'typeorm';
 
-import { EntityCore } from '@core/index';
-import { DB_TABLE_MEDIA, generateStorage } from '@utils/index';
+import { EntityCore } from '@core';
+import { DB_TABLE_MEDIA } from '@utils';
+import { FolderHelper } from '@utils/helpers';
 
 import { IMedia } from '../interface';
 
@@ -10,25 +11,25 @@ import { IMedia } from '../interface';
 })
 export default class MediaEntity extends EntityCore<IMedia> implements IMedia {
   @Column('varchar', { nullable: true })
+  mimeType!: string;
+
+  @Column('varchar', { nullable: true })
   name!: string;
 
   @Column('text')
   path!: string;
 
-  @Column('text', { nullable: true })
-  thumbnailPath!: string;
-
-  @Column('varchar', { nullable: true })
-  mimeType!: string;
-
   @Column('int', { nullable: true })
   size!: number;
 
-  get url() {
-    return generateStorage(this.path);
-  }
+  @Column('text', { nullable: true })
+  thumbnailPath!: string;
 
   get thumbnailUrl() {
-    return generateStorage(this.thumbnailPath);
+    return FolderHelper.generateStorage(this.thumbnailPath);
+  }
+
+  get url() {
+    return FolderHelper.generateStorage(this.path);
   }
 }

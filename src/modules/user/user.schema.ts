@@ -1,4 +1,4 @@
-import { ID_SCHEMA, IJsonSchema, PAGE_SCHEMA } from '@core/schema';
+import { ID_SCHEMA, IJsonSchema, PAGE_SCHEMA } from '@core';
 
 export const GetListUserSchema: IJsonSchema = {
   params: { type: 'object', maxProperties: 0 },

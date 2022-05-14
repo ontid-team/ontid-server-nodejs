@@ -6,10 +6,12 @@ import { Factory, Seeder } from 'typeorm-seeding';
 
 import { MediaEntity } from '@modules/media';
 import { UserEntity, ProfileEntity } from '@modules/user';
-import { DEFAULT_SEED_DATA } from '@utils/index';
+import { DEFAULT_SEED_DATA } from '@utils';
 
 export default class User implements Seeder {
   public async run(_factory: Factory, connection: Connection): Promise<void> {
+    await connection.createQueryBuilder().delete().from(UserEntity).execute();
+
     for (let i = 1; i <= DEFAULT_SEED_DATA; i++) {
       const gender = faker.helpers.randomize([0, 1]);
 

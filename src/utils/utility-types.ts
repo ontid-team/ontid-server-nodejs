@@ -1,4 +1,4 @@
-import { FindOneOptions } from 'typeorm';
+import { FindOneOptions, SelectQueryBuilder } from 'typeorm';
 
 export type OptionCtx<T> = Pick<
   FindOneOptions<T>,
@@ -10,23 +10,26 @@ export type FilterCtx<T> = {
 };
 
 export type Token = {
-  tokenType: string;
   accessToken: string;
   refreshToken: string;
+  tokenType: string;
 };
 
 export type JWT = {
-  sub: string;
   email: string;
-  userId: number;
   role: string;
+  sub: string;
+  userId: number;
 };
 
 export type TokenPayload = {
-  keycloakId?: string;
-  userId: number;
   email: string;
+  userId: number;
 };
+
+export enum TokenType {
+  BEARER = 'Bearer',
+}
 
 export enum Role {
   ADMIN = 'admin',
@@ -34,45 +37,42 @@ export enum Role {
   USER = 'user',
 }
 
-export interface IHttpException {
+export enum LoggerType {
+  DB = 'DB',
+  HTTP = 'Http',
+  QUEUE = 'Queue',
+  SERVER = 'Server',
+}
+
+export type LoggerCtxInfo = {
+  error?: Error | any;
+  info?: string | any;
   message: string;
-  status: number;
-  code: string;
+  type?: LoggerType;
+};
+
+export type LoggerCtxError = Required<
+  Pick<LoggerCtxInfo, 'message' | 'error'>
+> &
+  Pick<LoggerCtxInfo, 'type'>;
+
+export enum FileName {
+  AUDIO = 'audio',
+  DOCS = 'docs',
+  IMAGE = 'image',
+  VIDEO = 'video',
 }
 
-export enum HttpExceptionType {
-  OK = 'OK',
-  SENT_SMS = 'SENT_SMS',
-  VERIFIED_EMAIL = 'VERIFIED_EMAIL',
-  WRONG_EMAIL_CONFIRM_TOKEN = 'WRONG_EMAIL_CONFIRM_TOKEN',
-  BAD_REQUEST = 'BAD_REQUEST',
-  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
-  EMPTY_EMAIL = 'EMPTY_EMAIL',
-  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
-  TOKEN_MALFORMED = 'TOKEN_MALFORMED',
-  TOKEN_VERIFY = 'TOKEN_VERIFY',
-  PARSE_TOKEN = 'PARSE_TOKEN',
-  FORBIDDEN = 'FORBIDDEN',
-  NOT_FOUND = 'NOT_FOUND',
-  ROUTE_NOT_FOUND = 'ROUTE_NOT_FOUND',
-  USER_ALREADY_TAKEN = 'USER_ALREADY_TAKEN',
-  UNPROCESSABLE_ENTITY = 'UNPROCESSABLE_ENTITY',
-  LIMIT_FILE_IMAGE_SIZE = 'LIMIT_FILE_IMAGE_SIZE',
-  FILE_FORMAT = 'FILE_FORMAT',
-  EXTERNAL = 'EXTERNAL',
-  SERVER_ERROR = 'SERVER_ERROR',
-  DB_ERROR = 'DB_ERROR',
-}
+export type RangeType = {
+  max?: number | string | Date;
+  min?: number | string | Date;
+};
 
-export enum HttpStatus {
-  OK = 200,
-  Created = 201,
-  NoContent = 204,
-  BadRequest = 400,
-  Unauthorized = 401,
-  Forbidden = 403,
-  NotFound = 404,
-  Conflict = 409,
-  UnprocessableEntity = 422,
-  InternalServerError = 500,
-}
+export type SqlRangeType<T> = {
+  abs?: boolean;
+  alias: string;
+  key: string;
+  queryBuilder: SelectQueryBuilder<T>;
+  range?: RangeType;
+  type?: 'date' | 'number' | 'date-time';
+};

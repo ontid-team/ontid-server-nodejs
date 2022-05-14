@@ -4,5 +4,7 @@ Dockerfile
 .dockerignore
 logs
 build
+http
 data
 storage
+coverage

@@ -7,9 +7,15 @@ type DateInfo = {
   updatedAt: Date;
 };
 
-type Query = {
-  [key: string]: string | number | boolean;
+type DateCtx = string | number | Date;
+
+type HttpExceptionType = {
+  code: string;
+  message: string;
+  status: number;
 };
+
+type OrderType = 'ASC' | 'DESC';
 
 type Meta = {
   currentPage: number;
@@ -17,12 +23,13 @@ type Meta = {
   hasPrevPage: boolean;
   nextPage: number;
   prevPage: number;
-  totalPages: number;
   totalItems: number;
+  totalPages: number;
 };
 
 type Page = { count: number; limit: number; page: number };
+
 type ResponseData<T> = {
-  data: T[] | T;
+  data: T;
   meta?: Meta;
 };

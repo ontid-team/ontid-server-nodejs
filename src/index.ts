@@ -1,12 +1,12 @@
-import { AppConfig, DBConfig } from '@config/index';
-import { Logger } from '@core/index';
+import { AppConfig } from '@config';
 import db from '@db/index';
-import Middleware, { ErrorMiddleware } from '@middleware/index';
-import { EventEmitter } from '@utils/index';
+import { Logger } from '@lib';
+import Middleware, { ErrorMiddleware } from '@middleware';
+import { EventEmitter } from '@utils/helpers';
 
 import Server from './server';
 
-const app = new Server({
+const server = new Server({
   port: Number(AppConfig.port),
   initMiddleware: Middleware,
   errorMiddleware: ErrorMiddleware,
@@ -14,28 +14,25 @@ const app = new Server({
 
 db.connect()
   .then(() => {
-    Logger.debug('Database initialized...');
-    Logger.debug('--- SQL DATABASE CONFIG ---');
-    Logger.debug(`HOST: ${DBConfig.host}`);
-    Logger.debug(`PORT: ${DBConfig.port}`);
-    app
+    Logger.debug({ message: 'Database initialized...' });
+    server
       .init()
       .then(() => {
         EventEmitter.emit('start');
-        Logger.info('Server start initialization...');
-        Logger.debug('--- APP CONFIG ---');
-        Logger.debug(`HOST: ${AppConfig.host}`);
-        Logger.debug(`PORT: ${AppConfig.port}`);
-        Logger.debug(`NAME: ${AppConfig.name}`);
+
+        console.info('Server start initialization..');
+        Logger.info({ message: 'Server start initialization..' });
       })
       .catch((error) => {
         EventEmitter.emit('close');
-        Logger.error('Server fails to initialize...', error);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        Logger.error({ message: 'Server fails to initialize...', error });
         process.exit(1);
       });
   })
   .catch((error) => {
     EventEmitter.emit('close');
-    Logger.error('Database fails to initialize...', error);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    Logger.error({ message: 'Database fails to initialize...', error });
     process.exit(1);
   });

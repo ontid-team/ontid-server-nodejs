@@ -3,11 +3,16 @@ import {
   QueryRunner,
   Table,
   TableForeignKey,
+  TableUnique,
 } from 'typeorm';
 
-import { DB_TABLE_USER, DB_TABLE_MEDIA, Role } from '@utils/index';
+import { DB_TABLE_USER, DB_TABLE_MEDIA, Role, DB_UQ_USER_EMAIL } from '@utils';
 
-export class user1614755512269 implements MigrationInterface {
+export class User1614755512269 implements MigrationInterface {
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable(DB_TABLE_USER);
+  }
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -27,14 +32,13 @@ export class user1614755512269 implements MigrationInterface {
           {
             name: 'email',
             type: 'varchar',
-            isUnique: true,
+            isNullable: true,
           },
           {
             name: 'role',
             type: 'enum',
             enum: Object.values(Role),
-            // eslint-disable-next-line quotes
-            default: "'user'",
+            default: `'${Role.USER}'`,
           },
           {
             name: 'isNotifyEmail',
@@ -53,31 +57,38 @@ export class user1614755512269 implements MigrationInterface {
           },
           {
             name: 'createdAt',
-            type: 'timestamp',
+            type: 'timestamptz',
             default: 'now()',
           },
           {
             name: 'updatedAt',
-            type: 'timestamp',
+            type: 'timestamptz',
             default: 'now()',
+          },
+          {
+            name: 'deletedAt',
+            type: 'timestamptz',
+            isNullable: true,
           },
         ],
       }),
       true,
     );
 
-    await queryRunner.createForeignKey(
-      DB_TABLE_USER,
+    await queryRunner.createUniqueConstraints(DB_TABLE_USER, [
+      new TableUnique({
+        name: DB_UQ_USER_EMAIL,
+        columnNames: ['email'],
+      }),
+    ]);
+
+    await queryRunner.createForeignKeys(DB_TABLE_USER, [
       new TableForeignKey({
         columnNames: ['avatarId'],
         referencedColumnNames: ['id'],
         referencedTableName: DB_TABLE_MEDIA,
         onDelete: 'SET NULL',
       }),
-    );
-  }
-
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable(DB_TABLE_USER);
+    ]);
   }
 }

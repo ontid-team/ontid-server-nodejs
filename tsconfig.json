@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "CommonJS",
-    "target": "ES2020",
+    "target": "ES2021",
     "removeComments": true,
     "noImplicitAny": false,
     "outDir": "./build",
@@ -30,19 +30,23 @@
     "suppressExcessPropertyErrors": true,
     "suppressImplicitAnyIndexErrors": true,
     "paths": {
-      "@config/*": ["./src/config/*"],
-      "@core/*": ["./src/core/*"],
+      "@config": ["./src/config/index.ts"],
+      "@core": ["./src/core/index.ts"],
       "@db/*": ["./src/db/*"],
-      "@middleware/*": ["./src/middleware/*"],
+      "@i18n": ["./src/i18n/index.ts"],
+      "@lib": ["./src/lib/index.ts"],
+      "@middleware": ["./src/middleware/index.ts"],
       "@modules/*": ["./src/modules/*"],
-      "@utils/*": ["./src/utils/*"],
+      "@utils": ["./src/utils/index.ts"],
+      "@utils/helpers": ["./src/utils/helpers/index.ts"],
       "@providers/*": ["./src/providers/*"]
     },
     "typeRoots": ["./src/@types", "./node_modules/@types"]
   },
   "include": ["./src", "./tests"],
-  "exclude": [".node_modules", "./build"],
+  "exclude": [".node_modules", "build"],
   "ts-node": {
-    "files": true
+    "files": true,
+    "require": ["tsconfig-paths/register"]
   }
 }

@@ -1,11 +1,13 @@
+import { injectable } from 'tsyringe';
 import { getCustomRepository } from 'typeorm';
 
-import { ServiceCore } from '@core/index';
+import { ServiceCore } from '@core';
 
 import { IMediaService } from './interface';
 import MediaRepository from './media.repository';
-import { FullMedia, Media } from './media.type';
+import { Media } from './media.type';
 
+@injectable()
 export default class MediaService extends ServiceCore implements IMediaService {
   readonly repository: MediaRepository;
 
@@ -15,7 +17,7 @@ export default class MediaService extends ServiceCore implements IMediaService {
     this.repository = getCustomRepository(MediaRepository);
   }
 
-  async create(body: Media) {
-    return (await this.repository.createMedia(body)) as FullMedia;
+  create(body: Media) {
+    return this.repository.createMedia(body);
   }
 }

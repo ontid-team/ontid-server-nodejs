@@ -1,23 +1,30 @@
-type CurrentUser = {
-  userId: number;
+type UserContext = {
   email: string;
   role: string;
+  userId?: number;
 };
 
 type Context = {
+  browser?: string;
+  cache?: string;
+  domain?: string;
+  ip?: string;
+  order: { [key: string]: string };
+  os?: string;
   pagination: {
-    page: number;
     limit: number;
+    page: number;
     skip: number;
   };
-  order: { [key: string]: string };
+  role?: string;
+  userAgent?: string;
 };
 
 declare namespace Express {
   export interface Request {
     ctx: Context;
-    currentUser: CurrentUser;
     params: any;
     rawBody: Buffer;
+    user: UserContext;
   }
 }

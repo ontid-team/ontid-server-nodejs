@@ -1,14 +1,16 @@
-import { HttpException } from '@core/index';
+import { HttpExceptionCore } from '@core';
 
-import { CodeResponse } from '../code-response';
-import { HttpExceptionType, IHttpException } from '../utility-types';
+import { CodeResponse, HttpException } from '../code-response';
 
-export const responseError = (code: HttpExceptionType): HttpException => {
-  return new HttpException({
-    ...CodeResponse[code],
-  });
-};
+export default (() => {
+  const error = (code: HttpException): HttpExceptionCore =>
+    new HttpExceptionCore(CodeResponse[code]);
 
-export const responseOk = (code: HttpExceptionType): IHttpException => {
-  return CodeResponse[code];
-};
+  const success = (code: HttpException): HttpExceptionType =>
+    CodeResponse[code];
+
+  const custom = (ctx: Partial<HttpExceptionType>): HttpExceptionCore =>
+    new HttpExceptionCore(ctx);
+
+  return { error, success, custom };
+})();

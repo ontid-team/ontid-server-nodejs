@@ -2,14 +2,10 @@ import { Request, RequestHandler } from 'express';
 import mime from 'mime';
 import multer, { Multer, StorageEngine, FileFilterCallback } from 'multer';
 
-import { MediaConfig } from '@config/index';
-import { MiddlewareCore } from '@core/index';
-import {
-  MAX_SIZE_IMAGE_MB,
-  getHashName,
-  responseError,
-  HttpExceptionType,
-} from '@utils/index';
+import { MediaConfig } from '@config';
+import { MiddlewareCore } from '@core';
+import { MAX_SIZE_IMAGE_MB, HttpException, FileName } from '@utils';
+import { FolderHelper, ResponseHelper } from '@utils/helpers';
 
 class UploadFileMiddleware extends MiddlewareCore {
   protected upload: Multer;
@@ -33,9 +29,11 @@ class UploadFileMiddleware extends MiddlewareCore {
         cb(null, MediaConfig.imgPathFolder);
       },
       filename: (_req: Request, file, cb) => {
-        const name = `${getHashName(
+        const name = `${FolderHelper.getHashName(
           file.originalname,
-        )}-${Date.now()}.${mime.getExtension(file.mimetype)}`.toLowerCase();
+        )}-${Date.now()}.${
+          mime.getExtension(file.mimetype) || ''
+        }`.toLowerCase();
 
         cb(null, name);
       },
@@ -49,15 +47,18 @@ class UploadFileMiddleware extends MiddlewareCore {
       cb: FileFilterCallback,
     ) => {
       const fileSize = req.headers['content-length'] || 0;
-      let error = responseError(HttpExceptionType.FILE_FORMAT);
+      let error = ResponseHelper.error(HttpException.FILE_FORMAT);
 
-      if (/^(image)\//.test(file.mimetype)) {
+      if (
+        /(jpg|jpeg|png)/g.test(file.mimetype) &&
+        FileName.IMAGE === file.fieldname
+      ) {
         if (fileSize <= MAX_SIZE_IMAGE_MB * 1024 * 1024) {
           cb(null, true);
 
           return;
         }
-        error = responseError(HttpExceptionType.LIMIT_FILE_IMAGE_SIZE);
+        error = ResponseHelper.error(HttpException.LIMIT_FILE_IMAGE_SIZE);
       }
 
       cb(error);
@@ -69,8 +70,8 @@ class UploadFileMiddleware extends MiddlewareCore {
    *
    * @returns {Function}
    */
-  handler(path = 'file'): RequestHandler {
-    return this.upload.single(path);
+  handler(): RequestHandler {
+    return this.upload.any();
   }
 }
 

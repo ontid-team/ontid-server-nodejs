@@ -1,22 +1,25 @@
-import AutoBind from 'auto-bind';
 import { Request, Response } from 'express';
+import { injectable, inject } from 'tsyringe';
 
-import { ControllerCore } from '@core/index';
+import { ControllerCore } from '@core';
+import { FilterCtx } from '@utils';
 
 import { UserDTO } from './dto';
 import { IUserService } from './interface';
+import { FullUser } from './user.type';
 
 /**
- * @swagger
+ * @openapi
  * tags:
  *   name: User
  *   description: user
  */
+@injectable()
 export default class UserController extends ControllerCore {
-  constructor(private readonly service: IUserService) {
+  constructor(
+    @inject('UserService') private readonly userService: IUserService,
+  ) {
     super();
-
-    AutoBind(this);
   }
 
   /**
@@ -26,37 +29,24 @@ export default class UserController extends ControllerCore {
    *      tags: [User]
    *      description: Get list user
    *      parameters:
-   *        - in: query
-   *          name: limit
-   *          description: The numbers of items to return
-   *          schema:
-   *            type: integer
-   *        - in: query
-   *          name: page
-   *          description: The page number
-   *          schema:
-   *            type: integer
+   *        - $ref: '#/components/parameters/LimitParam'
+   *        - $ref: '#/components/parameters/PageParam'
+   *        - $ref: '#/components/parameters/SortByIdParam'
+   *        - $ref: '#/components/parameters/SortByFullName'
    *      responses:
    *        200:
-   *          description: Successful operation
-   *          content:
-   *            application/json:
-   *              schema:
-   *                type: object
-   *                properties:
-   *                  data:
-   *                    type: array
-   *                    items:
-   *                      $ref: '#/components/schemas/UserResponse'
-   *                  meta:
-   *                    $ref: '#/components/schemas/Meta'
+   *          $ref: '#/components/responses/UserListResponse'
    */
-  async getList(req: Request, res: Response) {
+  async getList(
+    req: Request<any, any, any, FilterCtx<FullUser>>,
+    res: Response,
+  ) {
+    const { filter } = req.query;
     const { page, limit } = req.ctx.pagination;
 
     const [data, count] = await Promise.all([
-      this.service.getList(req.ctx),
-      this.service.count(),
+      this.userService.getList(filter, req.ctx),
+      this.userService.count(filter),
     ]);
 
     this.response(res, { data, dto: UserDTO, page: { page, limit, count } });
@@ -69,28 +59,15 @@ export default class UserController extends ControllerCore {
    *      tags: [User]
    *      description: Get one user
    *      parameters:
-   *        - name: id
-   *          in: path
-   *          description: "ID of user to return"
-   *          required: true
-   *          schema:
-   *            type: integer
-   *            format: int64
+   *        - $ref: '#/components/parameters/IdParam'
    *      responses:
    *        200:
-   *          description: Successful operation
-   *          content:
-   *            application/json:
-   *              schema:
-   *                type: object
-   *                properties:
-   *                  data:
-   *                    $ref: '#/components/schemas/UserResponse'
+   *          $ref: '#/components/responses/UserOneResponse'
    */
   async getOne(req: Request<Id>, res: Response) {
     const { id } = req.params;
 
-    const data = await this.service.getOne({ id });
+    const data = await this.userService.getOne({ id });
 
     this.response(res, { data, dto: UserDTO });
   }

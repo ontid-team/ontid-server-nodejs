@@ -1,8 +1,12 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-import { DB_TABLE_MEDIA } from '@utils/index';
+import { DB_TABLE_MEDIA } from '@utils';
 
-export class media1614755512269 implements MigrationInterface {
+export class Media1614755512269 implements MigrationInterface {
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable(DB_TABLE_MEDIA);
+  }
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -40,21 +44,17 @@ export class media1614755512269 implements MigrationInterface {
           },
           {
             name: 'createdAt',
-            type: 'timestamp',
+            type: 'timestamptz',
             default: 'now()',
           },
           {
             name: 'updatedAt',
-            type: 'timestamp',
+            type: 'timestamptz',
             default: 'now()',
           },
         ],
       }),
       true,
     );
-  }
-
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable(DB_TABLE_MEDIA);
   }
 }

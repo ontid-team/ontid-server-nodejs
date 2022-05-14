@@ -1,10 +1,10 @@
 import { resolve } from 'path';
 
-import { ConfigCore } from '@core/index';
+import { ConfigCore } from '@core';
 
 class MediaConfig extends ConfigCore {
-  readonly storagePathFolder: string;
   readonly imgPathFolder: string;
+  readonly storagePathFolder: string;
 
   constructor() {
     super();

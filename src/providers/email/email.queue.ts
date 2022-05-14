@@ -1,10 +1,11 @@
 import Bull from 'bull';
 import ms from 'ms';
 
-import { AppConfig, EmailConfig, RedisConfig } from '@config/index';
-import { Logger } from '@core/index';
+import { EmailConfig } from '@config';
+import { Logger, Queue } from '@lib';
 import { FullUser } from '@modules/user';
-import { EventEmitter } from '@utils/index';
+import { LoggerType } from '@utils';
+import { EventEmitter } from '@utils/helpers';
 
 import {
   EMAIL_QUEUQ,
@@ -13,75 +14,93 @@ import {
 } from './email.constant';
 import EmailService from './email.service';
 
-export const EmailQueue = new Bull(EMAIL_QUEUQ, {
-  redis: {
-    port: RedisConfig.port,
-    host: RedisConfig.host,
-    password: RedisConfig.password,
-  },
-  prefix: AppConfig.name,
-  limiter: { max: 30, duration: ms('5s') },
-  defaultJobOptions: {
-    attempts: 30,
-    backoff: {
-      type: 'fixed',
-      delay: ms('1m'),
-    },
-  },
-});
+class EmailQueue extends Queue {
+  constructor() {
+    super(EMAIL_QUEUQ, {
+      defaultJobOptions: {
+        attempts: 30,
+        backoff: {
+          type: 'exponential',
+          delay: ms('1s'),
+        },
+      },
+    });
 
-EventEmitter.once('close', async () => {
-  await EmailQueue.close();
-});
+    this.process();
+  }
 
-EmailQueue.on('error', Logger.error);
+  addForgotPasswordToQueue(
+    data: Pick<FullUser, 'email'> & { token: string },
+    opt?: Bull.JobOptions,
+  ) {
+    void this.queue.add(EMAIL_FORGOT_PASSWORD, data, opt);
+  }
 
-EventEmitter.once('start', () => {
-  EmailQueue.process(
-    EMAIL_FORGOT_PASSWORD,
-    async (job: Bull.Job<Pick<FullUser, 'email'> & { token: string }>) => {
-      try {
-        const { email } = job.data;
+  addRegisterToQueue(data: Pick<FullUser, 'email'>, opt?: Bull.JobOptions) {
+    void this.queue.add(EMAIL_REGISTER, data, opt);
+  }
 
-        const result = await EmailService.sendEmail({
-          to: email,
-          from: EmailConfig.username,
-          subject: 'Forgot password',
-          text: 'Forgot password',
-        });
+  private process() {
+    EventEmitter.once('start', () => {
+      void this.queue.process(
+        EMAIL_FORGOT_PASSWORD,
+        async (job: Bull.Job<Pick<FullUser, 'email'> & { token: string }>) => {
+          try {
+            const { email, token } = job.data;
 
-        await job.progress(100);
+            await EmailService.sendEmail({
+              to: email,
+              from: EmailConfig.username,
+              subject: 'Forgot password',
+              text: 'Forgot password',
+              html: `Token: ${token}`,
+            });
 
-        return Promise.resolve(result);
-      } catch (err) {
-        Logger.error(`${EMAIL_QUEUQ} ${EMAIL_FORGOT_PASSWORD}`, err);
+            await job.progress(100);
 
-        return Promise.reject(err);
-      }
-    },
-  );
+            return await Promise.resolve();
+          } catch (error) {
+            Logger.error({
+              message: `${EMAIL_QUEUQ} ${EMAIL_FORGOT_PASSWORD}`,
+              error,
+              type: LoggerType.QUEUE,
+            });
 
-  EmailQueue.process(
-    EMAIL_REGISTER,
-    async (job: Bull.Job<Pick<FullUser, 'email'>>) => {
-      try {
-        const { email } = job.data;
+            return Promise.reject(error);
+          }
+        },
+      );
 
-        const result = await EmailService.sendEmail({
-          to: email,
-          from: EmailConfig.username,
-          subject: 'Register',
-          text: 'Register',
-        });
+      void this.queue.process(
+        EMAIL_REGISTER,
+        async (job: Bull.Job<Pick<FullUser, 'email'>>) => {
+          try {
+            const { email } = job.data;
 
-        await job.progress(100);
+            await EmailService.sendEmail({
+              to: email,
+              from: EmailConfig.username,
+              subject: 'Register',
+              text: 'Register',
+              html: `Email: ${email}`,
+            });
 
-        return Promise.resolve(result);
-      } catch (err) {
-        Logger.error(`${EMAIL_QUEUQ} ${EMAIL_REGISTER}`, err);
+            await job.progress(100);
 
-        return Promise.reject(err);
-      }
-    },
-  );
-});
+            return await Promise.resolve();
+          } catch (error) {
+            Logger.error({
+              message: `${EMAIL_QUEUQ} ${EMAIL_REGISTER}`,
+              error,
+              type: LoggerType.QUEUE,
+            });
+
+            return Promise.reject(error);
+          }
+        },
+      );
+    });
+  }
+}
+
+export default new EmailQueue();

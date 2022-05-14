@@ -1,8 +1,8 @@
 export interface IProfile {
-  userId: number;
-  fullName?: string;
-  firstName?: string;
-  lastName?: string;
-  birthday?: string;
   about?: string;
+  birthday?: string;
+  firstName?: string;
+  fullName?: string;
+  lastName?: string;
+  userId: number;
 }

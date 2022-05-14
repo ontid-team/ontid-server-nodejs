@@ -1,17 +1,68 @@
-import { Repository, FindConditions, DeepPartial, ObjectType } from 'typeorm';
+import { DatabaseError } from 'pg';
+import {
+  Repository,
+  FindConditions,
+  DeepPartial,
+  ObjectType,
+  ObjectLiteral,
+  QueryFailedError,
+} from 'typeorm';
 
-import { OptionCtx } from '@utils/index';
+import { OptionCtx, HttpException, DB_UQ_USER_EMAIL } from '@utils';
+import { ResponseHelper } from '@utils/helpers';
 
-export default class RepositoryCore<T> extends Repository<T> {
-  async findEntityList(options: OptionCtx<T> = {}): Promise<T[]> {
+export default class RepositoryCore<
+  Entity extends ObjectLiteral,
+> extends Repository<Entity> {
+  async deleteEntity(query: FindConditions<Entity>): Promise<void> {
+    await this.delete(query);
+  }
+
+  async findEntity(options: OptionCtx<Entity> = {}): Promise<Entity[]> {
     return this.find(options);
   }
 
-  async findEntityOneOrFail(options: OptionCtx<T> = {}): Promise<T> {
+  async findEntityOneOrFail(options: OptionCtx<Entity> = {}): Promise<Entity> {
     return this.findOneOrFail(options);
   }
 
-  protected async insertEntityMany<E = T>(
+  async removeCache(name?: string) {
+    if (name) {
+      await this.manager.connection?.queryResultCache?.remove([name]);
+    }
+  }
+
+  async updateEntity<T>(
+    query: Partial<T>,
+    body: DeepPartial<Entity>,
+  ): Promise<Entity> {
+    try {
+      const entityFromDB = await this.findOneOrFail({ where: query });
+
+      this.merge(entityFromDB, body);
+
+      return await this.save(entityFromDB as DeepPartial<Entity>);
+    } catch (err) {
+      throw this.errorHandler(err);
+    }
+  }
+
+  protected errorHandler(error: unknown) {
+    if (error instanceof QueryFailedError) {
+      const err = error.driverError as DatabaseError;
+
+      switch (err.constraint) {
+        case DB_UQ_USER_EMAIL:
+          return ResponseHelper.error(HttpException.EMAIL_ALREADY_TAKEN);
+        default:
+          return error;
+      }
+    }
+
+    return error;
+  }
+
+  protected async insertEntityMany<E = Entity>(
     entities: DeepPartial<E>[],
     into: ObjectType<E>,
   ): Promise<E[]> {
@@ -19,13 +70,13 @@ export default class RepositoryCore<T> extends Repository<T> {
       await this.createQueryBuilder()
         .insert()
         .into(into)
-        .values(entities)
+        .values(entities as unknown as DeepPartial<Entity>[])
         .returning('*')
         .execute()
     ).generatedMaps as E[];
   }
 
-  protected async insertEntityOne<E = T>(
+  protected async insertEntityOne<E = Entity>(
     entities: DeepPartial<E>,
     into: ObjectType<E>,
   ): Promise<E> {
@@ -33,13 +84,9 @@ export default class RepositoryCore<T> extends Repository<T> {
       await this.createQueryBuilder()
         .insert()
         .into(into)
-        .values(entities)
+        .values(entities as unknown as DeepPartial<Entity>)
         .returning('*')
         .execute()
     ).generatedMaps[0] as E;
-  }
-
-  async deleteEntity(query: FindConditions<T>): Promise<void> {
-    await this.delete(query);
   }
 }

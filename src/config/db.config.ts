@@ -1,14 +1,17 @@
-import { ConfigCore } from '@core/index';
+import { ConfigCore } from '@core';
+import { CACHE_TIME } from '@utils';
 
 class DBConfig extends ConfigCore {
-  readonly client: string;
-  readonly host: string;
-  readonly port: number;
-  readonly user: string;
-  readonly password: string;
-  readonly database: string;
+  readonly cacheTime: number;
   readonly charset: string;
+  readonly client: string;
+  readonly database: string;
   readonly debug: boolean;
+  readonly host: string;
+  readonly password: string;
+  readonly port: number;
+  readonly ssl: string;
+  readonly user: string;
 
   constructor() {
     super();
@@ -41,6 +44,16 @@ class DBConfig extends ConfigCore {
       'utf8',
     );
     this.debug = this.set<boolean>('DB_DEBUG', this.joi.boolean(), false);
+    this.cacheTime = this.set<number>(
+      'DB_CACHE_TIME',
+      this.joi.number(),
+      CACHE_TIME,
+    );
+    this.ssl = this.set<string>(
+      'DB_SSL_CERT',
+      this.joi.string().allow(null, ''),
+      '',
+    );
   }
 }
 

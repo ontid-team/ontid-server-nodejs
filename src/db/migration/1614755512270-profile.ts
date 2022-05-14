@@ -5,9 +5,13 @@ import {
   TableForeignKey,
 } from 'typeorm';
 
-import { DB_TABLE_PROFILE, DB_TABLE_USER } from '@utils/index';
+import { DB_TABLE_PROFILE, DB_TABLE_USER } from '@utils';
 
-export class profile1614755512269 implements MigrationInterface {
+export class Profile1614755512269 implements MigrationInterface {
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable(DB_TABLE_PROFILE);
+  }
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -46,12 +50,12 @@ export class profile1614755512269 implements MigrationInterface {
           },
           {
             name: 'createdAt',
-            type: 'timestamp',
+            type: 'timestamptz',
             default: 'now()',
           },
           {
             name: 'updatedAt',
-            type: 'timestamp',
+            type: 'timestamptz',
             default: 'now()',
           },
         ],
@@ -68,9 +72,5 @@ export class profile1614755512269 implements MigrationInterface {
         onDelete: 'CASCADE',
       }),
     );
-  }
-
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable(DB_TABLE_PROFILE);
   }
 }

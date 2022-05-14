@@ -1,7 +1,7 @@
 import { FullUser } from '../user.type';
 
 export interface IUserService {
-  getList(params: Context): Promise<FullUser[]>;
+  count(query: Partial<FullUser>): Promise<number>;
+  getList(query: Partial<FullUser>, ctx: Context): Promise<FullUser[]>;
   getOne(query: Partial<FullUser>): Promise<FullUser>;
-  count(): Promise<number>;
 }

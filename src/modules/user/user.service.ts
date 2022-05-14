@@ -1,12 +1,13 @@
+import { injectable } from 'tsyringe';
 import { getCustomRepository } from 'typeorm';
 
-import { ServiceCore } from '@core/index';
-import { OptionCtx } from '@utils/index';
+import { ServiceCore } from '@core';
 
 import { IUserService } from './interface';
 import UserRepository from './user.repository';
 import { FullUser } from './user.type';
 
+@injectable()
 export default class UserService extends ServiceCore implements IUserService {
   readonly repository: UserRepository;
 
@@ -16,26 +17,15 @@ export default class UserService extends ServiceCore implements IUserService {
     this.repository = getCustomRepository(UserRepository);
   }
 
-  async getList(params: Context) {
-    const { limit, skip } = params.pagination;
-
-    const options: OptionCtx<FullUser> = {
-      skip,
-      take: limit,
-    };
-
-    return (await this.repository.findEntityList(options)) as FullUser[];
+  async count(query: Partial<FullUser>) {
+    return this.repository.countByQuery({ where: query });
   }
 
-  async getOne(query: Partial<FullUser>) {
-    const options: OptionCtx<FullUser> = {
-      where: query,
-    };
-
-    return (await this.repository.findEntityOneOrFail(options)) as FullUser;
+  getList(query: Partial<FullUser>, { pagination: { limit, skip } }: Context) {
+    return this.repository.findListUser({ where: query, skip, take: limit });
   }
 
-  async count() {
-    return this.repository.count();
+  getOne(query: Partial<FullUser>) {
+    return this.repository.findEntityOneOrFail({ where: query });
   }
 }

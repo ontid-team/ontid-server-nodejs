@@ -1,19 +1,15 @@
-type HttpDetail = {
-  status: number;
-  code: string;
-  message: string;
-};
+import { CodeResponse } from '@utils';
 
-export default class HttpException extends Error {
-  readonly status: number;
+export default class HttpExceptionCore extends Error {
   readonly code: string;
   readonly message: string;
+  readonly status: number;
 
-  constructor(detail: HttpDetail) {
+  constructor(ctx: Partial<HttpExceptionType>) {
     super();
 
-    this.status = detail.status;
-    this.code = detail.code;
-    this.message = detail.message;
+    this.status = ctx?.status || CodeResponse.EXTERNAL.status;
+    this.code = ctx?.code || CodeResponse.EXTERNAL.code;
+    this.message = ctx?.message || CodeResponse.EXTERNAL.message;
   }
 }

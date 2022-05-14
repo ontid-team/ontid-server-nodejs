@@ -6,8 +6,11 @@ export class MediaDTO {
   id!: number;
 
   @Expose()
-  url!: string;
+  mimeType!: string;
 
   @Expose()
   thumbnailUrl!: number;
+
+  @Expose()
+  url!: string;
 }
