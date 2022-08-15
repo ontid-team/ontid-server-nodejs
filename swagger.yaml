@@ -28,53 +28,6 @@ components:
         example: 1
       description: The page number
 
-    SearchParam:
-      in: query
-      name: limit
-      required: false
-      schema:
-        type: string
-        example: Search
-      description: The search
-
-    UserIdParam:
-      in: query
-      name: filter[user_id]
-      required: false
-      schema:
-        type: number
-        example: 20
-      description: Filter by userId
-
-    IsActiveParam:
-      in: query
-      name: filter[is_active]
-      required: false
-      schema:
-        type: boolean
-        example: true
-      description: Filter by isActive
-
-    StartDateParam:
-      in: query
-      name: filter[start_date]
-      required: false
-      schema:
-        type: string
-        format: date
-        example: '2021-06-08'
-      description: Filter by startDate
-
-    EndDateParam:
-      in: query
-      name: filter[end_date]
-      required: false
-      schema:
-        type: string
-        format: date
-        example: '2021-06-10'
-      description: Filter by endDate
-
     SortByIdParam:
       in: query
       name: order[id]
@@ -85,6 +38,15 @@ components:
           - asc
           - desc
       description: sort by id field
+
+    SearchParam:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: string
+        example: Search
+      description: The search
 
     SortByCreatedAtParam:
       in: query
@@ -97,8 +59,40 @@ components:
           - desc
       description: sort by createdAt field
 
+    IsActiveParam:
+      in: query
+      name: filter[is_active]
+      required: false
+      schema:
+        type: boolean
+        example: true
+      description: Filter by isActive
+
+    EndDateParam:
+      in: query
+      name: filter[end_date]
+      required: false
+      schema:
+        type: string
+        format: date
+        example: '2021-06-10'
+      description: Filter by endDate
+
   responses:
-    ResponseHttpOk:
+    IdResponse:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - id
+            properties:
+              id:
+                type: number
+                example: 1
+
+    HttpOk:
       description: Successful operation
       content:
         application/json:
@@ -115,29 +109,211 @@ components:
                 type: string
                 example: OK
 
-    ResponseHttpNoContent:
-      description: No Content
-
-    ResponseId:
+    HttpPasswordResetSuccessfully:
       description: Successful operation
       content:
         application/json:
           schema:
             type: object
-            required:
-              - id
             properties:
-              id:
+              message:
+                type: string
+                example: Password reset successfully
+              status:
                 type: number
-                example: 1
+                example: 200
+              code:
+                type: string
+                example: PASSWORD_RESET_SUCCESSFULLY
+
+    HttpPasswordResetSentEmail:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Password reset code sent to email
+              status:
+                type: number
+                example: 200
+              code:
+                type: string
+                example: PASSWORD_RESET_SENT_EMAIL
+
+    HttpNoContent:
+      description: No Content
+
+    HttpBadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/InvalidCredentialsError'
+
+    HttpUnauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/TokenNotProviderError'
+              - $ref: '#/components/schemas/TokenExpiredError'
+              - $ref: '#/components/schemas/TokenVerifyError'
+
+    HttpForbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Forbidden'
+
+    HttpUnprocessableEntity:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Validation Failed
+              status:
+                type: number
+                example: 422
+              code:
+                type: string
+                example: UNPROCESSABLE_ENTITY
+
+    HttpInternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/ExternalServiceError'
+              - $ref: '#/components/schemas/ServerErrorOccurred'
+              - $ref: '#/components/schemas/DBError'
 
   securitySchemes:
-    cookie:
+    CookieAuth:
       type: apiKey
       in: cookie
       name: accessToken
 
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
+    TokenNotProviderError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Token not provided
+        status:
+          type: number
+          example: 401
+        code:
+          type: string
+          example: TOKEN_NOT_PROVIDED
+
+    TokenExpiredError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Token expired
+        status:
+          type: number
+          example: 401
+        code:
+          type: string
+          example: TOKEN_EXPIRED
+
+    TokenVerifyError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Token verify error
+        status:
+          type: number
+          example: 401
+        code:
+          type: string
+          example: TOKEN_VERIFY
+
+    Forbidden:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Forbidden
+        status:
+          type: number
+          example: 403
+        code:
+          type: string
+          example: FORBIDDEN
+
+    InvalidCredentialsError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Invalid credentials
+        status:
+          type: number
+          example: 400
+        code:
+          type: string
+          example: INVALID_CREDENTIALS
+
+    ExternalServiceError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: External service error
+        status:
+          type: number
+          example: 500
+        code:
+          type: string
+          example: EXTERNAL
+
+    ServerErrorOccurred:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Server error occurred
+        status:
+          type: number
+          example: 500
+        code:
+          type: string
+          example: SERVER_ERROR
+
+    DBError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: DB error
+        status:
+          type: number
+          example: 500
+        code:
+          type: string
+          example: DB_ERROR
+
     Meta:
       type: object
       properties:
@@ -171,3 +347,16 @@ components:
           type: number
           format: int64
           example: 200
+
+    Token:
+      type: object
+      properties:
+        tokenType:
+          type: string
+          example: Bearer
+        accessToken:
+          type: string
+          example: '******'
+        refreshToken:
+          type: string
+          example: '******'

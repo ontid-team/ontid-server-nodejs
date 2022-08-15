@@ -1,4 +1,19 @@
 components:
+  requestBodies:
+    MediaRequest:
+      description: Upload file
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              image:
+                type: string
+                format: binary
+              video:
+                type: string
+                format: binary
   responses:
     MediaResponse:
       description: Successful operation
@@ -8,23 +23,7 @@ components:
             type: object
             properties:
               data:
-                $ref: '#/components/schemas/Media'
-
-  requestBodies:
-    MediaRequest:
-      description: Upload file
-      required: true
-      content:
-        multipart/form-data:
-          schema:
-            type: object
-            required:
-              - file
-            properties:
-              file:
-                type: string
-                format: binary
-
+                $ref: '#/components/schemas/FullMedia'
   schemas:
     Media:
       type: object
@@ -35,12 +34,24 @@ components:
         name:
           type: string
           example: 72903098_2573923372689485_4766732546811625472_o.jpg
+        path:
+          type: string
+          example: http://localhost/074f328be9e9e0a2-1623071570814.jpeg
+        thumbnailPath:
+          type: string
+          example: http://localhost/074f328be9e9e0a2-1623071570814_thumbnail.jpeg
+        size:
+          type: number
+          example: 20000
         mimeType:
           type: string
           example: image/jpeg
-        url:
-          type: string
-          example: https://test.test/storage/074f328be9e9e0a2-1623071570814.jpeg
-        thumbnailUrl:
-          type: string
-          example: https://test.test/storage/074f328be9e9e0a2-1623071570814.jpeg
+
+    FullMedia:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: number
+              example: 1
+        - $ref: '#/components/schemas/Media'

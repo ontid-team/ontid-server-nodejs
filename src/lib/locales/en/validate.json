@@ -1,0 +1,4 @@
+{
+  "validate.file.format": "Wrong file format",
+  "validate.file.limitImage": "This file is too large to upload. The maximum supported file sizes are: {size} MB."
+}

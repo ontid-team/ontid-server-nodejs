@@ -1,11 +1,12 @@
 import { Request, RequestHandler } from 'express';
 import mime from 'mime';
-import multer, { Multer, StorageEngine, FileFilterCallback } from 'multer';
+import multer, { FileFilterCallback, Multer, StorageEngine } from 'multer';
 
 import { MediaConfig } from '@config';
 import { MiddlewareCore } from '@core';
-import { MAX_SIZE_IMAGE_MB, HttpException, FileName } from '@utils';
-import { FolderHelper, ResponseHelper } from '@utils/helpers';
+import { i18n } from '@lib';
+import { FileName, HttpException, MAX_SIZE_IMAGE_MB } from '@utils';
+import { FolderHelper, ResponseHelper, StringHelper } from '@utils/helpers';
 
 class UploadFileMiddleware extends MiddlewareCore {
   protected upload: Multer;
@@ -47,7 +48,9 @@ class UploadFileMiddleware extends MiddlewareCore {
       cb: FileFilterCallback,
     ) => {
       const fileSize = req.headers['content-length'] || 0;
-      let error = ResponseHelper.error(HttpException.FILE_FORMAT);
+      let errors: { [key: string]: string } = {
+        format: i18n()['validate.file.format'],
+      };
 
       if (
         /(jpg|jpeg|png)/g.test(file.mimetype) &&
@@ -58,10 +61,15 @@ class UploadFileMiddleware extends MiddlewareCore {
 
           return;
         }
-        error = ResponseHelper.error(HttpException.LIMIT_FILE_IMAGE_SIZE);
+        errors = {
+          limit: StringHelper.replate(i18n()['validate.file.limitImage'], {
+            size: MAX_SIZE_IMAGE_MB,
+          }),
+        };
       }
 
-      cb(error);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      cb(ResponseHelper.error(HttpException.UNPROCESSABLE_ENTITY, errors));
     };
   }
 

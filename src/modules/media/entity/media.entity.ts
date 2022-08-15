@@ -1,35 +1,39 @@
-import { Entity, Column } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 import { EntityCore } from '@core';
+import { UserEntity } from '@modules/user/entity';
 import { DB_TABLE_MEDIA } from '@utils';
-import { FolderHelper } from '@utils/helpers';
 
 import { IMedia } from '../interface';
 
-@Entity({
-  name: DB_TABLE_MEDIA,
-})
+@Entity({ name: DB_TABLE_MEDIA })
 export default class MediaEntity extends EntityCore<IMedia> implements IMedia {
-  @Column('varchar', { nullable: true })
-  mimeType!: string;
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'createdById' })
+  createdBy!: UserEntity;
+
+  @Column('int')
+  createdById!: number;
 
   @Column('varchar', { nullable: true })
-  name!: string;
+  mimeType?: string;
+
+  @Column('varchar', { nullable: true })
+  name?: string;
 
   @Column('text')
   path!: string;
 
   @Column('int', { nullable: true })
-  size!: number;
+  size?: number;
 
   @Column('text', { nullable: true })
-  thumbnailPath!: string;
+  thumbnailPath?: string;
 
-  get thumbnailUrl() {
-    return FolderHelper.generateStorage(this.thumbnailPath);
-  }
+  @ManyToOne(() => UserEntity, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'updatedById' })
+  updatedBy!: UserEntity;
 
-  get url() {
-    return FolderHelper.generateStorage(this.path);
-  }
+  @Column('int', { nullable: true })
+  updatedById!: number;
 }

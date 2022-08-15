@@ -3,6 +3,7 @@ import {
   QueryRunner,
   Table,
   TableForeignKey,
+  TableIndex,
 } from 'typeorm';
 
 import { DB_TABLE_PROFILE, DB_TABLE_USER } from '@utils';
@@ -72,5 +73,9 @@ export class Profile1614755512269 implements MigrationInterface {
         onDelete: 'CASCADE',
       }),
     );
+
+    await queryRunner.createIndices(DB_TABLE_PROFILE, [
+      new TableIndex({ columnNames: ['createdAt'] }),
+    ]);
   }
 }

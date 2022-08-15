@@ -1,1 +1,3 @@
-export type TokenType = 'accessToken' | 'refreshToken';
+export enum JwtInject {
+  JWT_SERVICE = 'JwtService',
+}

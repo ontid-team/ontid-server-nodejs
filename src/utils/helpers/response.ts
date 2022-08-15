@@ -2,15 +2,18 @@ import { HttpExceptionCore } from '@core';
 
 import { CodeResponse, HttpException } from '../code-response';
 
-export default (() => {
-  const error = (code: HttpException): HttpExceptionCore =>
-    new HttpExceptionCore(CodeResponse[code]);
+export const error = (
+  code: HttpException,
+  ctx?: Partial<Pick<HttpExceptionType, 'message' | 'errors'>>,
+): HttpExceptionCore =>
+  new HttpExceptionCore({
+    ...CodeResponse[code],
+    ...ctx,
+  });
 
-  const success = (code: HttpException): HttpExceptionType =>
-    CodeResponse[code];
+export const success = (code: HttpException): HttpExceptionType =>
+  CodeResponse[code];
 
-  const custom = (ctx: Partial<HttpExceptionType>): HttpExceptionCore =>
-    new HttpExceptionCore(ctx);
-
-  return { error, success, custom };
-})();
+export const custom = (ctx?: Partial<HttpExceptionType>): HttpExceptionCore => {
+  return new HttpExceptionCore(ctx);
+};

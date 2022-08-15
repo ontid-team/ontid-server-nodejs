@@ -1,15 +1,15 @@
 import {
-  Entity,
   Column,
-  OneToOne,
+  DeleteDateColumn,
+  Entity,
   JoinColumn,
   ManyToOne,
-  DeleteDateColumn,
+  OneToOne,
   Unique,
 } from 'typeorm';
 
 import { EntityCore } from '@core';
-import { MediaEntity } from '@modules/media';
+import { MediaEntity } from '@modules/media/entity';
 import { DB_TABLE_USER, DB_UQ_USER_EMAIL, Role } from '@utils';
 
 import { IUser } from '../interface';
@@ -21,11 +21,14 @@ import ProfileEntity from './profile.entity';
 export default class UserEntity extends EntityCore<IUser> implements IUser {
   @ManyToOne(() => MediaEntity, {
     onDelete: 'SET NULL',
-    cascade: true,
+    eager: true,
     nullable: true,
   })
   @JoinColumn({ name: 'avatarId' })
-  avatar!: MediaEntity;
+  avatar?: MediaEntity;
+
+  @Column('int', { nullable: true })
+  avatarId?: number;
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt?: Date;

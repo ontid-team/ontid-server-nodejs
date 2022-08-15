@@ -6,8 +6,6 @@ type UserContext = {
 
 type Context = {
   browser?: string;
-  cache?: string;
-  domain?: string;
   ip?: string;
   order: { [key: string]: string };
   os?: string;

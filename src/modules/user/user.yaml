@@ -1,16 +1,4 @@
 components:
-  parameters:
-    SortByFullName:
-      in: query
-      name: order[full_name]
-      required: false
-      schema:
-        type: string
-        enum:
-          - asc
-          - desc
-      description: order by fullName [admin]
-
   responses:
     UserListResponse:
       description: Successful operation

@@ -2,6 +2,7 @@
 export const ENV_DEVELOPMENT = 'development';
 export const ENV_TEST = 'test';
 export const ENV_PRODUCTION = 'production';
+export const ENV_CLI = 'cli';
 
 // Table
 export const SQL_ID_NAME = 'id';
@@ -27,6 +28,9 @@ export const PRETTY_PRINT = {
 
 export const SORT = ['ASC', 'DESC'];
 export const CACHE_TIME = 3000;
+
+export const IMG_WIDTH_THUMBNAIL = 300;
+export const IMG_HEIGHT_THUMBNAIL = 300;
 
 export const COOKIE_ACCESS_TOKEN = 'accessToken';
 export const COOKIE_REFRESH_TOKEN = 'refreshToken';

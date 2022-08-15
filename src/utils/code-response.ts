@@ -8,14 +8,12 @@ export enum HttpException {
   FILE_FORMAT = 'FILE_FORMAT',
   FORBIDDEN = 'FORBIDDEN',
   INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
-  LIMIT_FILE_IMAGE_SIZE = 'LIMIT_FILE_IMAGE_SIZE',
   NOT_FOUND = 'NOT_FOUND',
   OK = 'OK',
   PASSWORD_RESET_SENT_EMAIL = 'PASSWORD_RESET_SENT_EMAIL',
   PASSWORD_RESET_SUCCESSFULLY = 'PASSWORD_RESET_SUCCESSFULLY',
   REFRESH_TOKEN_EXPIRED = 'SESSION_EXPIRED',
   REFRESH_TOKEN_VERIFY = 'BAD_REFRESH_TOKEN',
-  ROUTE_NOT_FOUND = 'ROUTE_NOT_FOUND',
   SERVER_ERROR = 'SERVER_ERROR',
   TOKEN_EXPIRED = 'TOKEN_EXPIRED',
   TOKEN_MALFORMED = 'TOKEN_MALFORMED',
@@ -132,11 +130,6 @@ export const CodeResponse = {
     code: HttpException.NOT_FOUND,
     message: 'Not found',
   },
-  [HttpException.ROUTE_NOT_FOUND]: {
-    status: HttpStatus.NotFound,
-    code: HttpException.ROUTE_NOT_FOUND,
-    message: 'Route not found',
-  },
   [HttpException.EMAIL_ALREADY_TAKEN]: {
     message: 'This email already taken, try use another',
     status: HttpStatus.Conflict,
@@ -146,12 +139,6 @@ export const CodeResponse = {
     status: HttpStatus.UnprocessableEntity,
     code: HttpException.UNPROCESSABLE_ENTITY,
     message: 'Validation Failed',
-  },
-  [HttpException.LIMIT_FILE_IMAGE_SIZE]: {
-    message:
-      'This file is too large to upload. The maximum supported file sizes are: 5 MB.',
-    status: HttpStatus.InternalServerError,
-    code: HttpException.LIMIT_FILE_IMAGE_SIZE,
   },
   [HttpException.FILE_FORMAT]: {
     message: 'Wrong file format',

@@ -11,11 +11,10 @@ type DateCtx = string | number | Date;
 
 type HttpExceptionType = {
   code: string;
+  errors?: { [key: string]: string };
   message: string;
   status: number;
 };
-
-type OrderType = 'ASC' | 'DESC';
 
 type Meta = {
   currentPage: number;
@@ -30,6 +29,18 @@ type Meta = {
 type Page = { count: number; limit: number; page: number };
 
 type ResponseData<T> = {
-  data: T;
+  data: T[] | T;
   meta?: Meta;
 };
+
+type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
+
+type FilterCtx<T> = {
+  filter: T;
+};
+
+type Order = 'ASC' | 'DESC';

@@ -1,10 +1,10 @@
-export { default as CookieHelper } from './cookie';
-export { default as DateHelper } from './date';
+export * as CookieHelper from './cookie';
+export * as DateHelper from './date';
 export * from './event-emitter';
-export { default as FolderHelper } from './folder';
+export * as FolderHelper from './folder';
 export { default as IPHelper } from './ip';
-export { default as ResponseHelper } from './response';
-export { default as SanitizerHelper } from './sanitizer';
-export { default as SqlHelper } from './sql';
-export { default as StringHelper } from './string';
+export * as ResponseHelper from './response';
+export * as SanitizerHelper from './sanitizer';
+export * as SqlHelper from './sql';
+export * as StringHelper from './string';
 export { default as UserAgentHelper } from './user-agent';

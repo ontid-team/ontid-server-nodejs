@@ -1,11 +1,11 @@
-import pino, { DestinationStream, Level, LoggerOptions, Logger } from 'pino';
+import pino, { DestinationStream, Level, Logger, LoggerOptions } from 'pino';
 
 import {
   ENV_TEST,
-  PRETTY_PRINT,
-  LoggerType,
   LoggerCtxError,
   LoggerCtxInfo,
+  LoggerType,
+  PRETTY_PRINT,
 } from '@utils';
 
 export default class LoggerCore {

@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { injectable, inject } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 
 import { ControllerCore } from '@core';
 import { FilterCtx } from '@utils';
 
 import { UserDTO } from './dto';
 import { IUserService } from './interface';
-import { FullUser } from './user.type';
+import { FullUser, UserInject } from './user.type';
 
 /**
  * @openapi
@@ -17,7 +17,7 @@ import { FullUser } from './user.type';
 @injectable()
 export default class UserController extends ControllerCore {
   constructor(
-    @inject('UserService') private readonly userService: IUserService,
+    @inject(UserInject.USER_SERVICE) private readonly userService: IUserService,
   ) {
     super();
   }
@@ -27,15 +27,22 @@ export default class UserController extends ControllerCore {
    * /api/users:
    *   get:
    *      tags: [User]
-   *      description: Get list user
+   *      description: Show all users
    *      parameters:
    *        - $ref: '#/components/parameters/LimitParam'
    *        - $ref: '#/components/parameters/PageParam'
    *        - $ref: '#/components/parameters/SortByIdParam'
-   *        - $ref: '#/components/parameters/SortByFullName'
+   *        - $ref: '#/components/parameters/SortByCreatedAtParam'
    *      responses:
    *        200:
    *          $ref: '#/components/responses/UserListResponse'
+   *        401:
+   *          $ref: '#/components/responses/HttpUnauthorized'
+   *        500:
+   *          $ref: '#/components/responses/HttpInternalServerError'
+   *      security:
+   *        - CookieAuth: []
+   *        - BearerAuth: []
    */
   async getList(
     req: Request<any, any, any, FilterCtx<FullUser>>,
@@ -57,12 +64,19 @@ export default class UserController extends ControllerCore {
    * /api/users/{id}:
    *   get:
    *      tags: [User]
-   *      description: Get one user
+   *      description: Show one user
    *      parameters:
    *        - $ref: '#/components/parameters/IdParam'
    *      responses:
    *        200:
    *          $ref: '#/components/responses/UserOneResponse'
+   *        401:
+   *          $ref: '#/components/responses/HttpUnauthorized'
+   *        500:
+   *          $ref: '#/components/responses/HttpInternalServerError'
+   *      security:
+   *        - CookieAuth: []
+   *        - BearerAuth: []
    */
   async getOne(req: Request<Id>, res: Response) {
     const { id } = req.params;

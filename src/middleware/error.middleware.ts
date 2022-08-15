@@ -1,13 +1,12 @@
-import { Request, Response, ErrorRequestHandler, NextFunction } from 'express';
+import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 
-import { MiddlewareCore, HttpExceptionCore } from '@core';
-import { Logger } from '@lib';
+import { HttpExceptionCore, MiddlewareCore } from '@core';
 import {
+  COOKIE_ACCESS_TOKEN,
+  COOKIE_REFRESH_TOKEN,
   CodeResponse,
   HttpException,
-  COOKIE_REFRESH_TOKEN,
-  COOKIE_ACCESS_TOKEN,
-  LoggerType,
+  HttpStatus,
 } from '@utils';
 import { CookieHelper } from '@utils/helpers';
 
@@ -27,6 +26,12 @@ class ErrorMiddleware extends MiddlewareCore {
         error.name === 'EntityNotFoundError'
       ) {
         response = CodeResponse.NOT_FOUND;
+      } else if (error.status === HttpStatus.BadRequest) {
+        response = {
+          ...error,
+          message: error.message || CodeResponse.SERVER_ERROR.message,
+          code: HttpException.BAD_REQUEST,
+        };
       } else if (error.code && error.status && error.message) {
         response = { ...error };
       }
@@ -40,8 +45,6 @@ class ErrorMiddleware extends MiddlewareCore {
       }
 
       const errorRes = new HttpExceptionCore(response);
-
-      Logger.error({ message: errorRes.message, error, type: LoggerType.HTTP });
 
       res.status(errorRes.status).json(errorRes);
     };

@@ -50,3 +50,35 @@ export const ID_SCHEMA = {
     },
   },
 } as JSONSchemaCustom;
+
+export const EMAIL_SCHEMA = {
+  email: {
+    type: 'string',
+    format: 'email',
+    transform: ['trim', 'toLowerCase'],
+  },
+} as { [key: string]: JSONSchemaCustom };
+
+export const ORDER_ID_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    id: {
+      type: 'string',
+      enum: SORT,
+      transform: ['toUpperCase'],
+    },
+  },
+} as JSONSchemaCustom;
+
+export const ORDER_CREATED_AT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    createdAt: {
+      type: 'string',
+      enum: SORT,
+      transform: ['toUpperCase'],
+    },
+  },
+} as JSONSchemaCustom;

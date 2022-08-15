@@ -1,5 +1,5 @@
 import { FullMedia, Media } from '../media.type';
 
-export interface IMediaService {
+export interface IMediaRepository {
   create(body: Media): Promise<FullMedia>;
 }

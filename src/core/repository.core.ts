@@ -1,92 +1,76 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { DatabaseError } from 'pg';
 import {
-  Repository,
-  FindConditions,
-  DeepPartial,
-  ObjectType,
+  EntityTarget,
+  FindManyOptions,
   ObjectLiteral,
   QueryFailedError,
+  Repository,
+  SelectQueryBuilder,
 } from 'typeorm';
 
-import { OptionCtx, HttpException, DB_UQ_USER_EMAIL } from '@utils';
+import DB from '@db/index';
+import { i18n } from '@lib';
+import { DB_UQ_USER_EMAIL, HttpException, PostgresErrorCode } from '@utils';
 import { ResponseHelper } from '@utils/helpers';
 
-export default class RepositoryCore<
-  Entity extends ObjectLiteral,
-> extends Repository<Entity> {
-  async deleteEntity(query: FindConditions<Entity>): Promise<void> {
-    await this.delete(query);
+export default class RepositoryCore<Entity extends Id & ObjectLiteral> {
+  protected readonly alias: string;
+  protected orm: Repository<Entity>;
+  private _notFound: string;
+
+  constructor(entity: EntityTarget<Entity>, alias?: string) {
+    this.orm = DB.dataSource.getRepository(entity);
+    this.alias = alias || 'entity';
+    this._notFound = i18n()['notFound.default'];
   }
 
-  async findEntity(options: OptionCtx<Entity> = {}): Promise<Entity[]> {
-    return this.find(options);
+  set notFound(message: string) {
+    this._notFound = message;
   }
 
-  async findEntityOneOrFail(options: OptionCtx<Entity> = {}): Promise<Entity> {
-    return this.findOneOrFail(options);
-  }
-
-  async removeCache(name?: string) {
-    if (name) {
-      await this.manager.connection?.queryResultCache?.remove([name]);
+  protected buildOrder(
+    { order }: Pick<FindManyOptions<Entity>, 'order'>,
+    queryBuilder: SelectQueryBuilder<Entity>,
+  ) {
+    if (order && Object.keys(order).length) {
+      for (const key in order) {
+        if ({}.hasOwnProperty.call(order, key)) {
+          queryBuilder.addOrderBy(
+            `${this.alias}.${key}`,
+            order[key] as Order,
+            'NULLS LAST',
+          );
+        }
+      }
+    } else {
+      queryBuilder.addOrderBy(`${this.alias}.id`, 'DESC');
     }
   }
 
-  async updateEntity<T>(
-    query: Partial<T>,
-    body: DeepPartial<Entity>,
-  ): Promise<Entity> {
-    try {
-      const entityFromDB = await this.findOneOrFail({ where: query });
-
-      this.merge(entityFromDB, body);
-
-      return await this.save(entityFromDB as DeepPartial<Entity>);
-    } catch (err) {
-      throw this.errorHandler(err);
+  protected handleError(error: unknown) {
+    if (
+      (error as Error)?.name === 'EntityNotFound' ||
+      (error as Error)?.name === 'EntityNotFoundError'
+    ) {
+      return ResponseHelper.error(HttpException.NOT_FOUND, {
+        message: this._notFound,
+      });
     }
-  }
 
-  protected errorHandler(error: unknown) {
     if (error instanceof QueryFailedError) {
       const err = error.driverError as DatabaseError;
 
-      switch (err.constraint) {
-        case DB_UQ_USER_EMAIL:
-          return ResponseHelper.error(HttpException.EMAIL_ALREADY_TAKEN);
-        default:
-          return error;
+      if (err.code === PostgresErrorCode.UniqueViolation) {
+        switch (err.constraint) {
+          case DB_UQ_USER_EMAIL:
+            return ResponseHelper.error(HttpException.EMAIL_ALREADY_TAKEN);
+          default:
+            return error;
+        }
       }
     }
 
     return error;
-  }
-
-  protected async insertEntityMany<E = Entity>(
-    entities: DeepPartial<E>[],
-    into: ObjectType<E>,
-  ): Promise<E[]> {
-    return (
-      await this.createQueryBuilder()
-        .insert()
-        .into(into)
-        .values(entities as unknown as DeepPartial<Entity>[])
-        .returning('*')
-        .execute()
-    ).generatedMaps as E[];
-  }
-
-  protected async insertEntityOne<E = Entity>(
-    entities: DeepPartial<E>,
-    into: ObjectType<E>,
-  ): Promise<E> {
-    return (
-      await this.createQueryBuilder()
-        .insert()
-        .into(into)
-        .values(entities as unknown as DeepPartial<Entity>)
-        .returning('*')
-        .execute()
-    ).generatedMaps[0] as E;
   }
 }

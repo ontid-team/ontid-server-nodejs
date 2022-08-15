@@ -1,8 +1,8 @@
 import { resolve } from 'path';
 
-import { ConfigCore } from '@core';
+import { Config } from '@core/config';
 
-class MediaConfig extends ConfigCore {
+class MediaConfig extends Config {
   readonly imgPathFolder: string;
   readonly storagePathFolder: string;
 

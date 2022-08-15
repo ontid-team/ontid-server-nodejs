@@ -1,11 +1,18 @@
 import jwt from 'jsonwebtoken';
 
+import { ServiceCore } from '@core';
 import { HttpException } from '@utils';
 import { DateHelper, ResponseHelper } from '@utils/helpers';
 
-import { TokenType } from './jwt.type';
+import { IJwtService } from './interface';
 
-class JWTService {
+export default class JwtService extends ServiceCore implements IJwtService {
+  constructor() {
+    super();
+
+    this.init();
+  }
+
   decode(
     token: string,
     options?: jwt.DecodeOptions,
@@ -32,37 +39,23 @@ class JWTService {
     });
   }
 
-  verifyAsync<T>(
-    token: string,
-    secret: string,
-    typeToken: TokenType = 'accessToken',
-  ): Promise<T> {
+  verify<T>(token: string, secret: string) {
+    return jwt.verify(token, secret) as T;
+  }
+
+  verifyAsync<T>(token: string, secret: string): Promise<T> {
     return new Promise((resolve, reject) => {
       jwt.verify(token, secret, (error, decoded) => {
         if (error && error.name === 'TokenExpiredError') {
-          return reject(
-            ResponseHelper.error(
-              typeToken === 'refreshToken'
-                ? HttpException.REFRESH_TOKEN_EXPIRED
-                : HttpException.TOKEN_EXPIRED,
-            ),
-          );
+          return reject(ResponseHelper.error(HttpException.TOKEN_EXPIRED));
         }
 
         if (decoded) {
           return resolve(decoded as unknown as T);
         }
 
-        return reject(
-          ResponseHelper.error(
-            typeToken === 'refreshToken'
-              ? HttpException.REFRESH_TOKEN_VERIFY
-              : HttpException.TOKEN_VERIFY,
-          ),
-        );
+        return reject(ResponseHelper.error(HttpException.TOKEN_VERIFY));
       });
     });
   }
 }
-
-export default new JWTService();

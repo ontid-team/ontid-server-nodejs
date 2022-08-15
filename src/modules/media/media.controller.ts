@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
-import { injectable, inject } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 
 import { ControllerCore } from '@core';
-import { HttpStatus, HttpException } from '@utils';
+import { i18n } from '@lib';
+import { HttpException, HttpStatus } from '@utils';
 import { ResponseHelper } from '@utils/helpers';
 
 import { MediaDTO } from './dto';
 import { IMediaService } from './interface';
+import { MediaInject } from './media.type';
 
 /**
  * @openapi
@@ -16,7 +18,9 @@ import { IMediaService } from './interface';
  */
 @injectable()
 export default class MediaController extends ControllerCore {
-  constructor(@inject('MediaService') private readonly service: IMediaService) {
+  constructor(
+    @inject(MediaInject.MEDIA_SERVICE) private readonly service: IMediaService,
+  ) {
     super();
   }
 
@@ -31,24 +35,36 @@ export default class MediaController extends ControllerCore {
    *      responses:
    *        201:
    *          $ref: '#/components/responses/MediaResponse'
+   *        422:
+   *          $ref: '#/components/responses/HttpUnprocessableEntity'
+   *        500:
+   *          $ref: '#/components/responses/HttpInternalServerError'
    *      security:
-   *        - cookie: []
+   *        - CookieAuth: []
+   *        - BearerAuth: []
    */
   async upload(req: Request, res: Response) {
+    const { userId } = req.user as Required<UserContext>;
+
     if (req?.files?.[0]) {
       const {
         filename: path,
         originalname: name,
         mimetype: mimeType,
+        fieldname,
         size,
       } = req.files[0] as Express.Multer.File;
 
-      const data = await this.service.create({
-        path,
-        mimeType,
-        name,
-        size,
-      });
+      const data = await this.service.create(
+        {
+          path,
+          mimeType,
+          name,
+          size,
+          createdById: userId,
+        },
+        { fieldname },
+      );
 
       return this.response(res, {
         data,
@@ -58,8 +74,10 @@ export default class MediaController extends ControllerCore {
     }
 
     return this.response(res, {
-      data: ResponseHelper.error(HttpException.FILE_FORMAT),
-      status: HttpStatus.InternalServerError,
+      data: ResponseHelper.error(HttpException.UNPROCESSABLE_ENTITY, {
+        errors: { format: i18n()['validate.file.format'] },
+      }),
+      status: HttpStatus.UnprocessableEntity,
     });
   }
 }

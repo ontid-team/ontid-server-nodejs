@@ -11,40 +11,55 @@ Development environment requirements:
 ## Before starting - dev stage
 ```bash
 $ cp .env.example .env
-$ npm run typeorm migration:run
 $ npm run start:dev
 ```
 
 ## Before starting - prod stage
 ```bash
 $ cp .env.example .env
-$ docker-compose up -d --build
+$ npm run start:prod
 ```
 
-## PullRequest (PR)
-  - [ ] This PR implements new feature, fix bug, or some other changes
-  - [ ] If PR is not ready to review mark it as Draft
-  - [ ] All commits in this PR should be by [conventional-commits](https://www.conventionalcommits.org/en/v1.0.0/)
-  - [ ] Title of the PR should have issue(s) identifier(s) ("BOX-123 Example title of PR")
+## Run a migration
+```bash
+$ npm run migration:run
+```
+
+## Сreating a migration
+```bash
+$ npm run migrate:create --name=<NAME>
+```
 
 ## Project Structure
 
-| Name                              | Description |
-| --------------------------------- | ----------- |
-| **src/**                          | Source files |
-| **src/middleware/**               | Express Middlewares like error handler feature |
-| **build/**                        | Compiled source files will be placed here |
-| **tests/**                        | Test cases will be placed here |
-| **tests/unit/**                   | Unit Test cases will be placed here  |
-| **tests/integration/**            | API routes (Integration) Test cases will be placed here|
+| Name                        | Description                                             |
+| --------------------------- | ------------------------------------------------------- |
+| **src/**                    | Source files                                            |
+| **src/config/**             | Application configuration                               |
+| **src/core/**               | Reusable utilises and library source code like a logger |
+| **src/db/**                 | DB connect and migration                                |
+| **src/middleware/**         | Express Middlewares like error handler feature          |
+| **src/modules/**            | Express Middlewares like error handler feature          |
+| **src/providers/**          | Express Middlewares like error handler feature          |
+| **src/utils/**              | Express Middlewares like error handler feature          |
+| **src/utils/helpers/**      | Express Middlewares like error handler feature          |
+| **build/**                  | Compiled source files will be placed here               |
+| **tests/**                  | Test cases will be placed here                          |
+| **tests/unit/**             | Unit Test cases will be placed here                     |
+| **tests/integration/**      | API routes (Integration) Test cases will be placed here |
 
 ## Notes
 
-### 1. Why is my git pre-commit hook not executable by default?
+### 1. PullRequest (PR)
+- [ ] This PR implements new feature, fix bug, or some other changes
+- [ ] If PR is not ready to review mark it as Draft
+- [ ] All commits in this PR should be by [conventional-commits](https://www.conventionalcommits.org/en/v1.0.0/)
+- [ ] Title of the PR should have issue(s) identifier(s) ("BOX-123 Example title of PR")
 
+### 1. Why is my git pre-commit hook not executable by default?
 - Because files are not executable by default; they must be set to be executable.
 
-```
+```bash
 chmod ug+x .husky/*
 chmod ug+x .git/hooks/*
 ```

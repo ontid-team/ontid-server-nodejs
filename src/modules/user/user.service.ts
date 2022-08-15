@@ -1,31 +1,28 @@
-import { injectable } from 'tsyringe';
-import { getCustomRepository } from 'typeorm';
+import { inject, injectable } from 'tsyringe';
 
 import { ServiceCore } from '@core';
 
-import { IUserService } from './interface';
-import UserRepository from './user.repository';
-import { FullUser } from './user.type';
+import { IUserRepository, IUserService } from './interface';
+import { FullUser, UserInject } from './user.type';
 
 @injectable()
 export default class UserService extends ServiceCore implements IUserService {
-  readonly repository: UserRepository;
-
-  constructor() {
+  constructor(
+    @inject(UserInject.USER_REPOSITORY)
+    private readonly repository: IUserRepository,
+  ) {
     super();
-
-    this.repository = getCustomRepository(UserRepository);
   }
 
-  async count(query: Partial<FullUser>) {
+  count(query: Partial<FullUser>) {
     return this.repository.countByQuery({ where: query });
   }
 
   getList(query: Partial<FullUser>, { pagination: { limit, skip } }: Context) {
-    return this.repository.findListUser({ where: query, skip, take: limit });
+    return this.repository.findByQuery({ where: query, skip, take: limit });
   }
 
   getOne(query: Partial<FullUser>) {
-    return this.repository.findEntityOneOrFail({ where: query });
+    return this.repository.findOneOrFail({ where: query });
   }
 }

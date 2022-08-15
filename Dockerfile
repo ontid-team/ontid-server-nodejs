@@ -12,7 +12,7 @@ RUN npm ci
 FROM node:16-alpine AS builder
 LABEL Dmitry Neverovski <dmitryneverovski@gmail.com>
 ARG NODE_ENV
-ENV NODE_ENV ${NODE_ENV:-devolpement}
+ENV NODE_ENV ${NODE_ENV:-development}
 
 WORKDIR /app
 COPY . .
@@ -26,7 +26,6 @@ ARG RUNTIME
 ENV RUNTIME ${RUNTIME:-dev}
 
 WORKDIR /app
-
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json

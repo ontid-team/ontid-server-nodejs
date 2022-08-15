@@ -2,13 +2,19 @@ import { createTransport } from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 
 import { EmailConfig } from '@config';
+import { ServiceCore } from '@core';
+import { HttpException } from '@utils';
+import { ResponseHelper } from '@utils/helpers';
 
 import { SendEmail } from './email.type';
+import { IEmailService } from './interface';
 
-class EmailService {
+export default class EmailService extends ServiceCore implements IEmailService {
   private transporter: Mail;
 
   constructor() {
+    super();
+
     this.transporter = createTransport({
       host: EmailConfig.host,
       port: EmailConfig.port,
@@ -18,12 +24,17 @@ class EmailService {
         pass: EmailConfig.password,
       },
     });
+
+    this.init();
   }
 
-  async sendEmail(data: SendEmail): Promise<any> {
-    // send mail with defined transport object
-    return this.transporter.sendMail(data);
+  async sendEmail<T>(data: SendEmail): Promise<T> {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return await this.transporter.sendMail(data);
+    } catch (err) {
+      this.handleError(err);
+      throw ResponseHelper.error(HttpException.EXTERNAL);
+    }
   }
 }
-
-export default new EmailService();

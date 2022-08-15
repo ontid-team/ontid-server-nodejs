@@ -1,107 +1,119 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import { EntityRepository, SelectQueryBuilder } from 'typeorm';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { SelectQueryBuilder } from 'typeorm';
 
 import { RepositoryCore } from '@core';
+import { i18n } from '@lib';
 import { LIMIT_ITEM } from '@utils';
 import { SqlHelper } from '@utils/helpers';
 
 import { UserEntity } from './entity';
-import { FindUserOption } from './user.type';
+import { IUserRepository } from './interface';
+import { FullUser, User, UserOption } from './user.type';
 
-@EntityRepository(UserEntity)
-export default class UserRepository extends RepositoryCore<UserEntity> {
+export default class UserRepository
+  extends RepositoryCore<UserEntity>
+  implements IUserRepository
+{
+  constructor() {
+    super(UserEntity, 'u');
+
+    this.notFound = i18n()['notFound.user'];
+  }
+
   async countByQuery(
-    options: Pick<FindUserOption, 'relations' | 'where'>,
+    options: Pick<UserOption, 'relations' | 'where'>,
   ): Promise<number> {
-    const alias = 'u';
-    const queryBuilder = this.createQueryBuilder(alias);
+    try {
+      const queryBuilder = this.orm.createQueryBuilder(this.alias);
 
-    this.buildRelation({ ...options, alias }, queryBuilder);
-    this.buildWhere({ ...options, alias }, queryBuilder);
+      this.buildRelation(options, queryBuilder);
+      this.buildWhere(options, queryBuilder);
 
-    return queryBuilder.getCount();
-  }
-
-  async findListUser(
-    options: Omit<FindUserOption, 'alias'>,
-  ): Promise<UserEntity[]> {
-    const { skip, take } = options;
-    const alias = 'u';
-    const queryBuilder = this.createQueryBuilder(alias);
-
-    this.buildRelation({ ...options, alias }, queryBuilder);
-    this.buildWhere({ ...options, alias }, queryBuilder);
-    this.buildOrder({ ...options, alias }, queryBuilder);
-
-    if (skip) {
-      queryBuilder.skip(skip);
+      return await queryBuilder.getCount();
+    } catch (err) {
+      throw this.handleError(err);
     }
-
-    return queryBuilder.take(take || LIMIT_ITEM).getMany();
   }
 
-  async findOneUserOrFail(
-    options: Omit<FindUserOption, 'alias'>,
-  ): Promise<UserEntity> {
-    const alias = 'u';
-    const queryBuilder = this.createQueryBuilder(alias);
+  async create(body: User): Promise<Pick<FullUser, 'id' | 'email'>> {
+    try {
+      const userEntity = this.orm.create(body);
 
-    this.buildRelation({ ...options, alias }, queryBuilder);
-    this.buildWhere({ ...options, alias }, queryBuilder);
+      await this.orm.save(userEntity);
 
-    return queryBuilder.getOneOrFail();
+      return { id: userEntity.id, email: userEntity.email };
+    } catch (err) {
+      throw this.handleError(err);
+    }
   }
 
-  private buildOrder(
-    {
-      relations,
-      order,
-      alias,
-    }: Pick<FindUserOption, 'relations' | 'order' | 'alias'>,
-    queryBuilder: SelectQueryBuilder<UserEntity>,
-  ) {
-    if (order) {
-      for (const key in order) {
-        if ({}.hasOwnProperty.call(order, key)) {
-          switch (key) {
-            case 'fullName':
-              if (relations?.includes('profile')) {
-                queryBuilder
-                  .addOrderBy('profile.firstName', order[key])
-                  .addOrderBy('profile.lastName', order[key]);
-              }
-              break;
-            default:
-              queryBuilder.addOrderBy(
-                `${alias}.${key}`,
-                order[key],
-                'NULLS LAST',
-              );
-              break;
-          }
-        }
+  findByQuery(options: UserOption): Promise<FullUser[]> {
+    try {
+      const queryBuilder = this.orm.createQueryBuilder(this.alias);
+
+      this.buildRelation(options, queryBuilder);
+      this.buildWhere(options, queryBuilder);
+      this.buildOrder(options, queryBuilder);
+
+      if (options?.skip) {
+        queryBuilder.skip(options.skip);
       }
+
+      return queryBuilder.take(options?.take || LIMIT_ITEM).getMany();
+    } catch (err) {
+      throw this.handleError(err);
+    }
+  }
+
+  findOne(options: UserOption): Promise<FullUser | null> {
+    try {
+      const queryBuilder = this.orm.createQueryBuilder(this.alias);
+
+      this.buildRelation(options, queryBuilder);
+      this.buildWhere(options, queryBuilder);
+
+      return queryBuilder.getOne();
+    } catch (err) {
+      throw this.handleError(err);
+    }
+  }
+
+  async findOneOrFail(options: UserOption): Promise<FullUser> {
+    try {
+      const queryBuilder = this.orm.createQueryBuilder(this.alias);
+
+      this.buildRelation(options, queryBuilder);
+      this.buildWhere(options, queryBuilder);
+
+      return await queryBuilder.getOneOrFail();
+    } catch (err) {
+      throw this.handleError(err);
+    }
+  }
+
+  async update(entity: UserEntity, body: Partial<User>): Promise<void> {
+    try {
+      this.orm.merge(entity, body);
+      await this.orm.save(entity);
+    } catch (err) {
+      throw this.handleError(err);
     }
   }
 
   private buildRelation(
-    { relations, alias }: Pick<FindUserOption, 'relations' | 'alias'>,
+    { relations }: Pick<UserOption, 'relations'>,
     queryBuilder: SelectQueryBuilder<UserEntity>,
   ) {
     if (relations) {
       for (const relation of relations) {
-        queryBuilder.leftJoinAndSelect(`${alias}.${relation}`, relation);
+        queryBuilder.leftJoinAndSelect(`${this.alias}.${relation}`, relation);
       }
     }
   }
 
   private buildWhere(
-    {
-      where,
-      relations,
-      alias,
-    }: Pick<FindUserOption, 'relations' | 'where' | 'alias'>,
+    { where, relations }: Pick<UserOption, 'relations' | 'where'>,
     queryBuilder: SelectQueryBuilder<UserEntity>,
   ) {
     if (where) {
@@ -110,7 +122,7 @@ export default class UserRepository extends RepositoryCore<UserEntity> {
           switch (key) {
             case 'createdAt':
               SqlHelper.range({
-                alias,
+                alias: this.alias,
                 key,
                 queryBuilder,
                 range: where[key],
@@ -126,19 +138,19 @@ export default class UserRepository extends RepositoryCore<UserEntity> {
                       ? `CONCAT(profile."firstName", ' ', profile."lastName") ILIKE :${key} OR`
                       : ''
                   }
-                  ${alias}.email ILIKE :${key}
+                  ${this.alias}.email ILIKE :${key}
                 )
               `,
                 { [key]: `%${where[key]}%` },
               );
               break;
             case 'email':
-              queryBuilder.andWhere(`LOWER(${alias}."${key}") = :${key}`, {
+              queryBuilder.andWhere(`LOWER(${this.alias}."${key}") = :${key}`, {
                 [key]: where[key],
               });
               break;
             default:
-              queryBuilder.andWhere(`${alias}."${key}" = :${key}`, {
+              queryBuilder.andWhere(`${this.alias}."${key}" = :${key}`, {
                 [key]: where[key],
               });
           }

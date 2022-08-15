@@ -1,13 +1,24 @@
-import { EntityRepository } from 'typeorm';
-
 import { RepositoryCore } from '@core';
 
 import { MediaEntity } from './entity';
-import { Media, FullMedia } from './media.type';
+import { IMediaRepository } from './interface';
+import { FullMedia, Media } from './media.type';
 
-@EntityRepository(MediaEntity)
-export default class MediaRepository extends RepositoryCore<MediaEntity> {
-  createMedia(body: Media): Promise<FullMedia> {
-    return this.insertEntityOne(body, MediaEntity) as Promise<FullMedia>;
+export default class MediaRepository
+  extends RepositoryCore<MediaEntity>
+  implements IMediaRepository
+{
+  constructor() {
+    super(MediaEntity, 'm');
+  }
+
+  async create(body: Media): Promise<FullMedia> {
+    try {
+      const mediaEntity = this.orm.create(body);
+
+      return await this.orm.save(mediaEntity);
+    } catch (err) {
+      throw this.handleError(err);
+    }
   }
 }

@@ -3,10 +3,11 @@ import {
   QueryRunner,
   Table,
   TableForeignKey,
+  TableIndex,
   TableUnique,
 } from 'typeorm';
 
-import { DB_TABLE_USER, DB_TABLE_MEDIA, Role, DB_UQ_USER_EMAIL } from '@utils';
+import { DB_TABLE_MEDIA, DB_TABLE_USER, DB_UQ_USER_EMAIL, Role } from '@utils';
 
 export class User1614755512269 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -89,6 +90,10 @@ export class User1614755512269 implements MigrationInterface {
         referencedTableName: DB_TABLE_MEDIA,
         onDelete: 'SET NULL',
       }),
+    ]);
+
+    await queryRunner.createIndices(DB_TABLE_USER, [
+      new TableIndex({ columnNames: ['createdAt'] }),
     ]);
   }
 }

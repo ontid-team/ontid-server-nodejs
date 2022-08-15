@@ -1,12 +1,13 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import addKeywords from 'ajv-keywords';
-import { Request, Response, NextFunction, RequestHandler } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { JSONSchema7 } from 'json-schema';
 
-import { MiddlewareCore, IJsonSchema } from '@core';
-import { CodeResponse, Role } from '@utils';
-import { StringHelper, SanitizerHelper } from '@utils/helpers';
+import { MiddlewareCore } from '@core';
+import { IJsonSchema } from '@core/schema';
+import { CodeResponse } from '@utils';
+import { SanitizerHelper, StringHelper } from '@utils/helpers';
 
 class ValidateMiddleware extends MiddlewareCore {
   protected ajv: Ajv;
@@ -14,12 +15,7 @@ class ValidateMiddleware extends MiddlewareCore {
   constructor() {
     super();
 
-    this.ajv = new Ajv({
-      $data: true,
-      allErrors: true,
-      coerceTypes: true,
-      useDefaults: true,
-    });
+    this.ajv = new Ajv({ allErrors: true, coerceTypes: true });
     addFormats(this.ajv);
     addKeywords(this.ajv, ['transform', 'uniqueItemProperties']);
     this.ajv.addFormat('phone', /^\+[0-9]*/);
@@ -60,15 +56,9 @@ class ValidateMiddleware extends MiddlewareCore {
       next: NextFunction,
     ) => {
       try {
-        const role = req?.user?.role || Role.USER;
-
-        const params = (schemas?.params[role] || schemas.params) as JSONSchema7;
-        const query = (schemas?.query[role] || schemas.query) as JSONSchema7;
-        const body = (schemas?.body[role] || schemas.body) as JSONSchema7;
-
-        await this.validate(params, req.params);
-        await this.validate(query, req.query);
-        await this.validate(body, req.body);
+        await this.validate(schemas.params, req.params);
+        await this.validate(schemas.query, req.query);
+        await this.validate(schemas.body, req.body);
         next();
       } catch (errors) {
         res.status(422).json({
@@ -91,10 +81,7 @@ class ValidateMiddleware extends MiddlewareCore {
         const errors: { [key: string]: string } = {};
 
         for (const err of validate.errors) {
-          const name =
-            // (err.params.missingProperty as string) ||
-            // (err.params.additionalProperty as string) ||
-            err.instancePath.slice(1);
+          const name = err.instancePath.slice(1);
 
           if (name) {
             errors[name] = StringHelper.capitalize(err.message || '');

@@ -5,12 +5,12 @@ import { SelectQueryBuilder } from 'typeorm';
 
 import { SQL_ID_NAME } from '@utils';
 
-import { VIRTUAL_COLUMN_KEY } from './decorators';
+import { VIRTUAL_COLUMN_KEY } from '../decorators';
 
 declare module 'typeorm' {
   interface SelectQueryBuilder<Entity> {
     getMany(this: SelectQueryBuilder<Entity>): Promise<Entity[]>;
-    getOne(this: SelectQueryBuilder<Entity>): Promise<Entity | undefined>;
+    getOne(this: SelectQueryBuilder<Entity>): Promise<Entity | null>;
   }
 }
 
@@ -32,9 +32,11 @@ SelectQueryBuilder.prototype.getMany = async function () {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return entity;
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return [...items];
 };
 
@@ -42,7 +44,7 @@ SelectQueryBuilder.prototype.getOne = async function () {
   const { entities, raw } = await this.getRawAndEntities();
 
   if (!raw.length && !entities.length) {
-    return undefined;
+    return null;
   }
 
   const metaInfo = Reflect.getMetadata(VIRTUAL_COLUMN_KEY, entities[0]) ?? {};
@@ -51,5 +53,6 @@ SelectQueryBuilder.prototype.getOne = async function () {
     entities[0][propertyKey] = raw[0][name];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return entities[0];
 };
