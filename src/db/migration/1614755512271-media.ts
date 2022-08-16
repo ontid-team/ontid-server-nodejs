@@ -8,7 +8,7 @@ import {
 
 import { DB_TABLE_MEDIA, DB_TABLE_USER } from '@utils';
 
-export class Media1629959489270 implements MigrationInterface {
+export class Media1614755512271 implements MigrationInterface {
   async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable(DB_TABLE_MEDIA);
   }

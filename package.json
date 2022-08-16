@@ -1,6 +1,6 @@
 {
   "name": "ontid-server-nodejs",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "ONTID server nodeJs",
   "main": "src/index.ts",
   "scripts": {
@@ -19,7 +19,8 @@
     "migrate:run": "NODE_ENV=cli node -r ts-node/register ./node_modules/typeorm/cli.js migration:run -d src/db/typeorm/data-source.ts",
     "migrate:revert": "NODE_ENV=cli node -r ts-node/register ./node_modules/typeorm/cli.js migration:revert -d ./src/db/typeorm/data-source.ts",
     "migrate:show": "NODE_ENV=cli node -r ts-node/register ./node_modules/typeorm/cli.js migration:show -d ./src/db/typeorm/data-source.ts",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "commit": "git-cz"
   },
   "repository": {
     "type": "git",
@@ -74,6 +75,8 @@
     "ua-parser-js": "^1.0.2"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.0.3",
+    "@commitlint/config-conventional": "^17.0.3",
     "@types/body-parser": "^1.19.2",
     "@types/bull": "^3.15.9",
     "@types/chai": "^4.3.3",
@@ -98,6 +101,10 @@
     "@typescript-eslint/parser": "^5.33.0",
     "chai": "^4.3.6",
     "chai-http": "^4.3.0",
+    "commitizen": "^4.2.5",
+    "commitlint-config-cz": "^0.13.3",
+    "cz-conventional-changelog": "^3.3.0",
+    "cz-customizable": "^6.9.1",
     "eslint": "^8.22.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-config-prettier": "^8.5.0",
@@ -114,5 +121,10 @@
     "tsc-watch": "^5.0.3",
     "tsconfig-paths": "^4.1.0",
     "typescript": "^4.7.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    }
   }
 }

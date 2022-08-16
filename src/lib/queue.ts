@@ -1,10 +1,9 @@
 import Bull from 'bull';
-import ms from 'ms';
 
 import { RedisConfig } from '@config';
 import { Logger } from '@core/logger';
 import { LoggerType } from '@utils';
-import { EventEmitter } from '@utils/helpers';
+import { DateHelper, EventEmitter } from '@utils/helpers';
 
 export default class Queue {
   readonly queue: Bull.Queue;
@@ -35,12 +34,12 @@ export default class Queue {
 
   private get queueOptions() {
     return {
-      limiter: { max: 30, duration: ms('5s') },
+      limiter: { max: 30, duration: DateHelper.toMs('5s') },
       defaultJobOptions: {
         attempts: 30,
         backoff: {
           type: 'fixed',
-          delay: ms('1m'),
+          delay: DateHelper.toMs('1m'),
         },
       },
     };
@@ -56,7 +55,11 @@ export default class Queue {
 
   private eventError() {
     this.queue.on('error', (error) => {
-      Logger.error({ message: 'QueueCore', error, type: LoggerType.QUEUE });
+      Logger.error({
+        message: this.constructor.name,
+        error,
+        type: LoggerType.QUEUE,
+      });
     });
 
     EventEmitter.once('close', async () => {

@@ -8,7 +8,7 @@ import {
 
 import { DB_TABLE_PROFILE, DB_TABLE_USER } from '@utils';
 
-export class Profile1614755512269 implements MigrationInterface {
+export class Profile1614755512270 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable(DB_TABLE_PROFILE);
   }

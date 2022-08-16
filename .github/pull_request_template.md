@@ -1,18 +1,16 @@
   <!-- Please, review this guidelines and check marks on complete each -->
 
-### Branch name
-  - [ ] Your branch should be prefixed with `BOX-`
-  - [ ] Add issue identifier
+**Description:**
+Describe your changes.
 
-  Example:
+**Related issue:**
+Add link to the related issue.
 
-  ```
-  BOX-123
-  BOX-1
-  ```
-
-## Pull Request
-  - [ ] This pull request implements new feature, fix bug, or some other changes
-  - [ ] If PR is not ready to review mark it as Draft
-  - [ ] All commits in this PR should be created `npm run commit` by [conventional-commits](https://www.conventionalcommits.org/en/v1.0.0/)
-  - [ ] Title of the PR should have issue(s) identifier(s) ("BOX-123 Example title of PR")
+**Checklist before requesting a review:**
+- [ ] My code follows the style guidelines of this project
+- [ ] I have performed a self-review of my code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] My changes generate no new warnings
+- [ ] If it is a core feature, I have added thorough tests.
+- [ ] Mark if documentation changes are required.
+- [ ] Mark if tests were added or updated to cover the changes.
